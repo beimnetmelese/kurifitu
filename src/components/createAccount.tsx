@@ -90,23 +90,28 @@ export default function CreateAccount() {
 
       const created = data as RegisterResponse;
 
-      const loginResponse = await fetch("http://127.0.0.1:8000/auth/jwt/create/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const loginResponse = await fetch(
+        "http://127.0.0.1:8000/auth/jwt/create/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: formData.username,
+            password: formData.password,
+          }),
         },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password,
-        }),
-      });
+      );
 
       const loginData = (await loginResponse.json()) as
         | LoginResponse
         | Record<string, unknown>;
 
       if (!loginResponse.ok) {
-        throw new Error("Account created, but auto-login failed. Please sign in.");
+        throw new Error(
+          "Account created, but auto-login failed. Please sign in.",
+        );
       }
 
       const authData = loginData as LoginResponse;
