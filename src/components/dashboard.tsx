@@ -53,7 +53,7 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const url = "http://127.0.0.1:8000/";
+    const url = "https://bewnet.pythonanywhere.com/";
     const fetchData = async () => {
       try {
         setLoading(true);

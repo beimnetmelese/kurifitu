@@ -76,8 +76,8 @@ const AnalyticsDashboard = () => {
       setLoading(true);
       const url =
         days === "all"
-          ? "http://127.0.0.1:8000/api/feedbackstats"
-          : `http://127.0.0.1:8000/api/feedbackstats/?days=${days}`;
+          ? "https://bewnet.pythonanywhere.com/api/feedbackstats"
+          : `https://bewnet.pythonanywhere.com/api/feedbackstats/?days=${days}`;
 
       const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch stats");
