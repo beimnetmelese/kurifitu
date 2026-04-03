@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root {
+	font-family: 'Space Grotesk', 'Sora', system-ui, sans-serif;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	color: #0f172a;
+	background: #f4f7fb;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	margin: 0;
+	min-width: 320px;
+	background: #f4f7fb;
+}
+
+#root {
+	min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+	font: inherit;
+}
+
+::selection {
+	background: rgba(14, 165, 233, 0.18);
+	color: #0f172a;
+}
+
+@keyframes pageRise {
+	from {
+		opacity: 0;
+		transform: translateY(16px) scale(0.992);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
