@@ -50,7 +50,7 @@ export default function AdminLogin({ onLoginSuccess }: LoginProps) {
     setErrorMessage(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/auth/jwt/create/", {
+      const response = await fetch("https://bewnet.pythonanywhere.com/auth/jwt/create/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
