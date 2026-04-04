@@ -1,4 +1,4 @@
-import RecommendationCard from "../components/cards/RecommendationCard";
+import DecisionInsightCard from "../components/common/DecisionInsightCard";
 import { guests } from "../data/guests";
 import { predictGuestValue } from "../services/predictionService.ts";
 import {
@@ -6,6 +6,8 @@ import {
   getPurchaseLikelihood,
   getRecommendations,
 } from "../services/recommendationService.ts";
+import { formatCurrency } from "../utils/formatCurrency";
+import type { DecisionInsight } from "../types/decisionInsight";
 
 export default function Guests() {
   const guestInsights = guests.map((guest) => ({
@@ -23,6 +25,24 @@ export default function Guests() {
           0,
         ) / guestInsights.length
       : 0;
+
+  const decisionCards: DecisionInsight[] = guestInsights.map((guest) => {
+    const topOffer = guest.recommendations[0] || "Personalized concierge package";
+    const confidence = Math.round((guest.purchaseLikelihood || 0) * 100);
+    const expectedGain = Math.round((guest.predictedSpend || 0) * ((guest.purchaseLikelihood || 0) * 0.18));
+
+    return {
+      id: `${guest.name}-${guest.segment}`,
+      title: `${guest.name} (${guest.segment})`,
+      prediction: `Predicted spend ${formatCurrency(guest.predictedSpend)} with ${confidence}% purchase likelihood.`,
+      insight: guest.personalizedMessage,
+      recommendedAction: `Promote ${topOffer} during check-in and follow up with in-stay push messaging.`,
+      expectedImpact: `+${formatCurrency(expectedGain)} expected incremental spend`,
+      confidence,
+      reason: `Preference signals: ${(guest.preferences || []).join(", ") || "Behavioral profile"}.`,
+      tone: confidence >= 75 ? "success" : confidence >= 50 ? "info" : "warning",
+    };
+  });
 
   return (
     <section className="space-y-6">
@@ -69,16 +89,21 @@ export default function Guests() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {guestInsights.map((guest) => (
-          <RecommendationCard
-            key={guest.name}
-            title={`${guest.recommendations[0] || "Personalized Offer"} for ${guest.name}`}
-            matchPercentage={guest.purchaseLikelihood * 100}
-            description={`${guest.personalizedMessage} Segment: ${guest.segment}.`}
-          />
-        ))}
-      </div>
+      <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
+        <div className="border-b border-slate-200/80 pb-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500">
+            Guest Decision Feed
+          </p>
+          <h2 className="mt-2 text-xl font-semibold text-slate-950">
+            Predicted spend to upsell action
+          </h2>
+        </div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {decisionCards.map((item) => (
+            <DecisionInsightCard key={item.id} item={item} />
+          ))}
+        </div>
+      </section>
     </section>
   );
 }

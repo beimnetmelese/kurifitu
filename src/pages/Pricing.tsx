@@ -1,10 +1,31 @@
-import InsightCard from "../components/cards/InsightCard";
+import DecisionInsightCard from "../components/common/DecisionInsightCard";
 import PricingTable from "../components/tables/PricingTable";
 import { pricing } from "../data/pricing";
 import { buildPricingInsights } from "../services/pricingService.ts";
+import { formatCurrency } from "../utils/formatCurrency";
+import type { DecisionInsight } from "../types/decisionInsight";
 
 export default function Pricing() {
   const pricingInsights = buildPricingInsights(pricing);
+  const decisionCards: DecisionInsight[] = pricingInsights.map((item) => {
+    const estimatedMonthlyLift = Math.max(0, item.expectedLift * 90);
+    const confidence = item.demandLevel === "High" ? 88 : item.demandLevel === "Medium" ? 79 : 73;
+
+    return {
+      id: item.roomType,
+      title: `${item.roomType} pricing decision`,
+      prediction: `Suggested price ${formatCurrency(item.suggestedPrice)} (current ${formatCurrency(item.currentPrice)}).`,
+      insight: `${item.demandLevel} demand forecast indicates ${item.expectedLift >= 0 ? "headroom for higher rates" : "a need to protect occupancy"}.`,
+      recommendedAction:
+        item.expectedLift >= 0
+          ? `Increase ${item.roomType} rates by ${Math.round((item.expectedLift / Math.max(item.currentPrice, 1)) * 100)}% and pair with premium add-ons.`
+          : `Soften ${item.roomType} pricing and bundle value-added benefits to preserve bookings.`,
+      expectedImpact: `+${formatCurrency(estimatedMonthlyLift)} projected monthly revenue`,
+      confidence,
+      reason: item.optimizationReason,
+      tone: item.expectedLift >= 0 ? "success" : "warning",
+    };
+  });
 
   const recommendedAverage =
     pricingInsights.length > 0
@@ -59,16 +80,21 @@ export default function Pricing() {
 
       <PricingTable data={pricingInsights} />
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {pricingInsights.map((item) => (
-          <InsightCard
-            key={item.roomType}
-            title={`${item.roomType}: AI Recommendation`}
-            description={`${item.optimizationReason} Price adjusted by ${item.expectedLift >= 0 ? "+" : ""}${item.expectedLift}.`}
-            type={item.expectedLift >= 0 ? "success" : "warning"}
-          />
-        ))}
-      </div>
+      <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
+        <div className="border-b border-slate-200/80 pb-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500">
+            AI Pricing Decision Feed
+          </p>
+          <h2 className="mt-2 text-xl font-semibold text-slate-950">
+            Prediction to revenue action
+          </h2>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {decisionCards.map((item) => (
+            <DecisionInsightCard key={item.id} item={item} />
+          ))}
+        </div>
+      </section>
     </section>
   );
 }
