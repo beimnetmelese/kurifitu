@@ -81,6 +81,49 @@ export default function RevenueOverview() {
   const lowestDemandDay = occupancyData
     .slice()
     .sort((left, right) => left.predicted - right.predicted)[0];
+  const highestDemandDay = occupancyData
+    .slice()
+    .sort((left, right) => right.predicted - left.predicted)[0];
+
+  const demandForecast = occupancyData.slice(0, 7).map((row) => {
+    const level = getDemandLevel(row.predicted);
+    const normalizedDay = (row.day || "N/A").toLowerCase();
+    const isWeekend = normalizedDay.startsWith("sat") || normalizedDay.startsWith("sun");
+
+    return {
+      day: row.day || "N/A",
+      predicted: row.predicted,
+      level,
+      isWeekend,
+    };
+  });
+
+  const saturdayDemand = demandForecast.find((day) =>
+    day.day.toLowerCase().startsWith("sat"),
+  );
+  const tuesdayDemand = demandForecast.find((day) =>
+    day.day.toLowerCase().startsWith("tue"),
+  );
+  const highDemandActionDay =
+    saturdayDemand ?? {
+      day: highestDemandDay?.day ?? "Saturday",
+      predicted: highestDemandDay?.predicted ?? 92,
+      level: getDemandLevel(highestDemandDay?.predicted ?? 92),
+      isWeekend: true,
+    };
+  const lowDemandActionDay =
+    tuesdayDemand ?? {
+      day: lowestDemandDay?.day ?? "Tuesday",
+      predicted: lowestDemandDay?.predicted ?? 45,
+      level: getDemandLevel(lowestDemandDay?.predicted ?? 45),
+      isWeekend: false,
+    };
+
+  const demandPointColors = demandForecast.map((day) => {
+    if (day.level === "High") return "#16a34a";
+    if (day.level === "Medium") return "#f59e0b";
+    return "#ef4444";
+  });
 
   const recommendations: AiRecommendation[] = [
     {
@@ -235,6 +278,133 @@ export default function RevenueOverview() {
           </div>
         </section>
       </div>
+
+      <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
+        <div className="flex flex-col gap-2 border-b border-slate-200/80 pb-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500">
+            7-Day Demand Forecast
+          </p>
+          <h2 className="text-xl font-semibold text-slate-950">
+            Predicted occupancy and pricing signals
+          </h2>
+        </div>
+
+        <div className="mt-5 h-[300px] rounded-2xl border border-slate-200 bg-white p-3">
+          <Line
+            data={{
+              labels: demandForecast.map((day) => day.day),
+              datasets: [
+                {
+                  label: "Predicted occupancy",
+                  data: demandForecast.map((day) => day.predicted),
+                  borderColor: "#0f766e",
+                  backgroundColor: "rgba(15,118,110,0.15)",
+                  fill: true,
+                  tension: 0.35,
+                  pointRadius: 5,
+                  pointHoverRadius: 6,
+                  pointBackgroundColor: demandPointColors,
+                },
+                {
+                  label: "High-demand day",
+                  data: demandForecast.map((day) =>
+                    day.level === "High" ? day.predicted : null,
+                  ),
+                  borderColor: "transparent",
+                  backgroundColor: "#16a34a",
+                  pointRadius: 7,
+                  pointHoverRadius: 8,
+                  showLine: false,
+                },
+                {
+                  label: "Low-demand day",
+                  data: demandForecast.map((day) =>
+                    day.level === "Low" ? day.predicted : null,
+                  ),
+                  borderColor: "transparent",
+                  backgroundColor: "#ef4444",
+                  pointRadius: 7,
+                  pointHoverRadius: 8,
+                  showLine: false,
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                },
+                tooltip: {
+                  callbacks: {
+                    label: (context) => {
+                      const index = context.dataIndex;
+                      const day = demandForecast[index];
+                      if (!day) return `${context.dataset.label}: ${context.parsed.y}%`;
+                      return `${day.predicted}% (${day.level} demand${day.isWeekend ? ", weekend" : ""})`;
+                    },
+                  },
+                },
+              },
+              scales: {
+                y: {
+                  min: 0,
+                  max: 100,
+                  ticks: {
+                    callback: (value) => `${value}%`,
+                    color: "#64748b",
+                  },
+                  grid: {
+                    color: "#e2e8f0",
+                  },
+                },
+                x: {
+                  ticks: {
+                    color: "#64748b",
+                  },
+                  grid: {
+                    color: "#f1f5f9",
+                  },
+                },
+              },
+            }}
+          />
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {demandForecast.map((day) => {
+            const tone =
+              day.level === "High"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                : day.level === "Medium"
+                  ? "border-amber-200 bg-amber-50 text-amber-700"
+                  : "border-rose-200 bg-rose-50 text-rose-700";
+
+            return (
+              <span
+                key={day.day}
+                className={`rounded-full border px-3 py-1 text-xs font-semibold ${tone}`}
+              >
+                {day.day}: {day.level}
+              </span>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
+            <p className="text-sm font-semibold">
+              {highDemandActionDay.day} demand is very high ({highDemandActionDay.predicted.toFixed(0)}%) - increase room prices by 15%
+            </p>
+          </article>
+          <article className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+            <p className="text-sm font-semibold">
+              {lowDemandActionDay.day} demand is low ({lowDemandActionDay.predicted.toFixed(0)}%) - introduce discounts or bundles
+            </p>
+          </article>
+        </div>
+      </section>
 
       <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
         <div className="flex flex-col gap-2 border-b border-slate-200/80 pb-4">
