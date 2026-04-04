@@ -24,34 +24,33 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
     {
       key: "assistant" as const,
       icon: <FiMessageSquare className="w-7 h-7" />,
-      title: "AI Concierge",
+      title: "AI Assistant",
       description:
-        "Personalized dining recommendations and intelligent assistance",
+        "Get personalized help and instant answers to your questions",
       accent: "from-amber-500 to-amber-600",
       gradient: "from-amber-50 to-amber-100",
     },
     {
       key: "menuSuggestions" as const,
       icon: <MdOutlineRestaurantMenu className="w-7 h-7" />,
-      title: "Culinary Curator",
-      description:
-        "Artfully curated dishes aligned with your palate preferences",
+      title: "Menu Guide",
+      description: "Discover dishes perfectly matched to your taste",
       accent: "from-emerald-500 to-emerald-600",
       gradient: "from-emerald-50 to-emerald-100",
     },
     {
       key: "roomControls" as const,
       icon: <FiSliders className="w-7 h-7" />,
-      title: "Ambient Intelligence",
-      description: "Precision control of lighting, acoustics, and atmosphere",
+      title: "Room Settings",
+      description: "Adjust lighting, music, and atmosphere for your comfort",
       accent: "from-purple-500 to-purple-600",
       gradient: "from-purple-50 to-purple-100",
     },
     {
       key: "feedback" as const,
       icon: <FiStar className="w-7 h-7" />,
-      title: "Guest Voice",
-      description: "Share insights that shape our pursuit of excellence",
+      title: "Your Feedback",
+      description: "Share your thoughts to help us serve you better",
       accent: "from-rose-500 to-rose-600",
       gradient: "from-rose-50 to-rose-100",
     },
@@ -60,12 +59,12 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
   const stats = [
     {
       value: "4.9",
-      label: "Guest Satisfaction",
+      label: "Guest Rating",
       icon: <FiStar className="w-4 h-4" />,
     },
     {
       value: "150+",
-      label: "Daily Guests",
+      label: "Daily Visitors",
       icon: <FiUsers className="w-4 h-4" />,
     },
     {
@@ -75,14 +74,14 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
     },
     {
       value: "24/7",
-      label: "Concierge Access",
+      label: "Support Available",
       icon: <FiClock className="w-4 h-4" />,
     },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50/20 to-stone-100">
-      {/* Hero Section - Luxury Redesign */}
+      {/* Hero Section */}
       <div className="relative overflow-hidden">
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-800 to-amber-900">
@@ -101,9 +100,7 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm mb-8 border border-white/20">
               <FiAward className="w-4 h-4 text-amber-400" />
-              <span className="text-white/90 tracking-wide">
-                DESTINATION OF EXCELLENCE
-              </span>
+              <span className="text-white/90 tracking-wide">WELCOME TO</span>
             </div>
 
             {/* Main Title */}
@@ -116,8 +113,8 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
 
             {/* Subtitle */}
             <p className="text-xl md:text-2xl text-white/80 mb-8 font-light max-w-2xl leading-relaxed">
-              Where authentic African culinary heritage meets contemporary
-              luxury
+              Experience authentic African cuisine in a modern, welcoming
+              setting
             </p>
 
             {/* Divider */}
@@ -125,7 +122,7 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
               <div className="w-16 h-0.5 bg-amber-500"></div>
               <div className="flex items-center gap-2 text-amber-400 text-sm tracking-wide">
                 <FiMapPin className="w-4 h-4" />
-                <span>LUXURY DINING EXPERIENCE</span>
+                <span>PREMIUM DINING EXPERIENCE</span>
               </div>
             </div>
 
@@ -135,9 +132,7 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
                 onClick={() => onNavigate?.("assistant")}
                 className="group inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                <span className="font-medium tracking-wide">
-                  BEGIN EXPERIENCE
-                </span>
+                <span className="font-medium tracking-wide">GET STARTED</span>
                 <FiChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
               <button
@@ -145,9 +140,7 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
                 className="inline-flex items-center gap-2 px-8 py-3 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-full hover:bg-white/20 transition-all duration-300"
               >
                 <FiBookOpen className="w-4 h-4" />
-                <span className="font-medium tracking-wide">
-                  EXPLORE CULINARY ART
-                </span>
+                <span className="font-medium tracking-wide">VIEW MENU</span>
               </button>
             </div>
           </div>
@@ -176,17 +169,17 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 rounded-full mb-4">
             <FiTrendingUp className="w-4 h-4 text-amber-600" />
             <span className="text-xs font-semibold text-amber-700 uppercase tracking-wider">
-              Digital Concierge Suite
+              Digital Tools
             </span>
           </div>
           <h2 className="text-4xl md:text-5xl font-light text-stone-800 mb-4">
-            Elevated{" "}
+            Everything{" "}
             <span className="font-semibold bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
-              Guest Experience
+              You Need
             </span>
           </h2>
           <p className="text-stone-500 text-lg max-w-2xl mx-auto font-light">
-            Intelligent technology thoughtfully integrated with warm hospitality
+            Smart tools designed to make your dining experience better
           </p>
           <div className="w-20 h-0.5 bg-gradient-to-r from-amber-500 to-amber-700 mx-auto mt-6"></div>
         </div>
@@ -259,13 +252,13 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
             <div className="flex items-center gap-2 text-stone-400 text-sm">
               <FiCoffee className="w-4 h-4" />
               <span>
-                Kuriftu African Village — Where tradition meets innovation
+                Kuriftu African Village — Authentic flavors, warm hospitality
               </span>
             </div>
             <div className="flex items-center gap-4 text-stone-400 text-xs">
-              <span>© 2024 Kuriftu Hospitality Group</span>
+              <span>© 2024 Kuriftu</span>
               <span className="w-1 h-1 bg-stone-300 rounded-full"></span>
-              <span>AI-Powered Guest Experience</span>
+              <span>Smart Dining Experience</span>
             </div>
           </div>
         </div>

@@ -41,7 +41,7 @@ const Assistant = ({
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 1,
-      text: "Good evening. I'm your personal AI concierge at Kuriftu African Village. How may I enhance your dining experience this evening?",
+      text: "Good evening. I'm your personal AI Assistant at Kuriftu African Village. How may I enhance your dining experience this evening?",
       sender: "bot",
     },
   ]);
@@ -144,7 +144,7 @@ const Assistant = ({
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
               <span className="text-xs text-stone-400 tracking-wide">
-                CONCIERGE ACTIVE
+                Assistant ACTIVE
               </span>
             </div>
           </div>
@@ -154,7 +154,7 @@ const Assistant = ({
             <h1 className="text-4xl font-light text-stone-900 mt-4 mb-2 tracking-tight">
               AI{" "}
               <span className="font-semibold bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
-                Concierge
+                Assistant
               </span>
             </h1>
             <p className="text-stone-500 text-base font-light">
@@ -340,7 +340,7 @@ const Assistant = ({
                   </div>
                   <div>
                     <h2 className="font-semibold text-stone-800">
-                      Concierge Chat
+                      Assistant Chat
                     </h2>
                     <p className="text-xs text-stone-400">
                       AI-powered personal assistance
