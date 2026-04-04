@@ -1,4 +1,3 @@
-import PricingTable from "../components/tables/PricingTable";
 import { pricing } from "../data/pricing";
 import { buildPricingInsights } from "../services/pricingService.ts";
 import { formatCurrency } from "../utils/formatCurrency";
@@ -116,15 +115,13 @@ export default function Pricing() {
         </div>
       </div>
 
-      <PricingTable data={pricingInsights} />
-
       <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
         <div className="border-b border-slate-200/80 pb-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500">
             AI Pricing Decision Feed
           </p>
           <h2 className="mt-2 text-xl font-semibold text-slate-950">
-            Why each price changes and what it earns
+            Pricing decisions with clear rationale
           </h2>
         </div>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
