@@ -28,7 +28,7 @@ export function StrategyPage({
     "AI reallocates staff",
     "Inventory shifts",
     "Maintenance shifts earlier",
-    "Guest experience stays smooth",
+    "Kurifitu Go guest flow stays smooth",
   ];
 
   return (

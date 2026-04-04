@@ -196,7 +196,7 @@ export const initialDecisions: DecisionNote[] = [
 
 export const scenarioStory: Record<ScenarioKey, string[]> = {
   'Calm Morning': [
-    'OpsMind stabilizes the floor plan and watches for early guest movement.',
+    'Kurifitu Go stabilizes the floor plan and watches for early guest movement.',
     'Staff are kept balanced to avoid unnecessary burnout.',
     'Inventory stays conservative while the resort wakes up.',
   ],

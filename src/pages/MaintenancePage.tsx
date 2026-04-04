@@ -430,8 +430,8 @@ export function MaintenancePage({
             <div className="rounded-3xl border border-slate-200 bg-white p-4 md:col-span-2">
               <p className="text-sm text-slate-500">Engine note</p>
               <p className="mt-2 text-lg font-semibold text-slate-950">
-                Instead of fixing problems after complaints, OpsMind prevents
-                them before guests notice.
+                Instead of fixing problems after complaints, Kurifitu Go
+                prevents them before guests notice.
               </p>
             </div>
           </div>

@@ -154,7 +154,7 @@ const adminSections: AdminSection[] = [
 const adminTabs = adminSections.flatMap((section) => section.items);
 
 const guestTabs: { key: GuestPageKey; label: string; detail: string }[] = [
-  { key: "home", label: "Home", detail: "Guest experience hub" },
+  { key: "home", label: "Home", detail: "Kurifitu Go guest hub" },
   { key: "assistant", label: "AI Assistant", detail: "Personalized support" },
   {
     key: "menuSuggestions",
@@ -338,10 +338,10 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-950">
-                    Guest Experience
+                    Kurifitu Go Guest
                   </p>
                   <p className="text-xs text-slate-500">
-                    Personalized dining and room interactions
+                    Kurifitu Go personalized dining and room interactions
                   </p>
                 </div>
               </div>
@@ -402,7 +402,7 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
                     </p>
                   </div>
                   <p className="max-w-2xl text-sm text-slate-600">
-                    Explore guest-facing tools designed for a polished,
+                    Explore Kurifitu Go guest tools designed for a polished,
                     personalized dining experience.
                   </p>
                 </div>
@@ -519,10 +519,10 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-950">
-                  Admin Intelligence
+                  Kurifitu Go Admin
                 </p>
                 <p className="text-xs text-slate-500">
-                  Existing admin tools plus dashboard, analytics, guests,
+                  Kurifitu Go admin tools plus dashboard, analytics, guests,
                   segments, and pricing
                 </p>
               </div>

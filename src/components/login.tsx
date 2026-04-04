@@ -50,13 +50,16 @@ export default function AdminLogin({ onLoginSuccess }: LoginProps) {
     setErrorMessage(null);
 
     try {
-      const response = await fetch("https://bewnet.pythonanywhere.com/auth/jwt/create/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "https://bewnet.pythonanywhere.com/auth/jwt/create/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(credentials),
         },
-        body: JSON.stringify(credentials),
-      });
+      );
 
       const data = (await response.json()) as
         | LoginResponse
@@ -104,8 +107,8 @@ export default function AdminLogin({ onLoginSuccess }: LoginProps) {
             </h1>
             <p className="mt-4 max-w-lg text-sm leading-7 text-slate-300 sm:text-base">
               Sign in to open the right workspace for your role. Admin users are
-              sent to the business dashboard suite. Non-admin users are routed
-              to the guest experience workspace.
+              sent to the Kurifitu Go business dashboard suite. Non-admin users
+              are routed to the Kurifitu Go guest workspace.
             </p>
           </div>
         </div>
