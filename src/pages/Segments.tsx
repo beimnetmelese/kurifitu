@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
 import DecisionInsightCard from "../components/common/DecisionInsightCard";
 import { guests } from "../data/guests";
+import {
+  estimatePackageRevenueBoost,
+  getPackagesForSegment,
+} from "../services/packageRecommendationService";
 import type { DecisionInsight } from "../types/decisionInsight";
 import { formatCurrency } from "../utils/formatCurrency";
 
@@ -151,22 +155,42 @@ export default function Segments() {
           : "Email + website personalization",
   };
 
-  const segmentDecisionCards: DecisionInsight[] = segmentData.map((segment) => ({
-    id: segment.name,
-    title: `${segment.name} segment strategy`,
-    prediction: `Avg spend ${formatCurrency(segment.avgSpend)} with ${formatCurrency(segment.totalRevenueContribution)} contribution.`,
-    insight: `${segment.bookingPattern} Pricing sensitivity is ${segment.priceSensitivity.toLowerCase()}.`,
-    recommendedAction: `${segment.bestOffers}. ${segment.upsellStrategy}`,
-    expectedImpact: `+${formatCurrency(segment.expectedRevenueUplift)}/month and +${segment.conversionImprovement}% conversion`,
-    confidence: 72 + Math.min(20, segment.revenueGrowthPotential),
-    reason: segment.marketingSuggestion,
-    tone:
-      segment.name === mostValuable?.name
-        ? "success"
-        : segment.name === underperforming?.name
-          ? "warning"
-          : "info",
-  }));
+  const segmentDecisionCards: DecisionInsight[] = segmentData.map((segment) => {
+    const topPackage = getPackagesForSegment(segment.name)[0];
+    const packageBoost = topPackage
+      ? estimatePackageRevenueBoost(topPackage)
+      : { boostValue: 0, boostPercent: 0, expectedUpsellRevenue: 0 };
+
+    return {
+      id: segment.name,
+      title: `${segment.name} segment strategy`,
+      prediction: `Avg spend ${formatCurrency(segment.avgSpend)} with ${formatCurrency(segment.totalRevenueContribution)} contribution.`,
+      insight: `${segment.bookingPattern} Pricing sensitivity is ${segment.priceSensitivity.toLowerCase()}.`,
+      recommendedAction: topPackage
+        ? `Prioritize ${topPackage.packageName}. ${segment.upsellStrategy}`
+        : `${segment.bestOffers}. ${segment.upsellStrategy}`,
+      expectedImpact: topPackage
+        ? `+${formatCurrency(packageBoost.boostValue)} per booking (${packageBoost.boostPercent.toFixed(0)}%) and +${formatCurrency(segment.expectedRevenueUplift)}/month`
+        : `+${formatCurrency(segment.expectedRevenueUplift)}/month and +${segment.conversionImprovement}% conversion`,
+      confidence: 72 + Math.min(20, segment.revenueGrowthPotential),
+      reason: segment.marketingSuggestion,
+      tone:
+        segment.name === mostValuable?.name
+          ? "success"
+          : segment.name === underperforming?.name
+            ? "warning"
+            : "info",
+    };
+  });
+
+  const segmentPackages = useMemo(
+    () =>
+      segmentData.map((segment) => ({
+        segment: segment.name,
+        packages: getPackagesForSegment(segment.name),
+      })),
+    [segmentData],
+  );
 
   return (
     <section className="space-y-6">
@@ -447,6 +471,61 @@ export default function Segments() {
           </section>
         </aside>
       </div>
+
+      <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
+        <div className="border-b border-slate-200/80 pb-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500">
+            Smart Package Recommendation System
+          </p>
+          <h2 className="mt-2 text-xl font-semibold text-slate-950">
+            Segment-targeted bundles with projected uplift
+          </h2>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {segmentPackages.map((row) => {
+            const primaryPackage = row.packages[0];
+            if (!primaryPackage) return null;
+
+            const impact = estimatePackageRevenueBoost(primaryPackage);
+
+            return (
+              <article
+                key={`${row.segment}-${primaryPackage.id}`}
+                className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      {row.segment} segment
+                    </p>
+                    <h3 className="mt-1 text-sm font-semibold text-slate-950">
+                      {primaryPackage.packageName}
+                    </h3>
+                  </div>
+                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                    +{formatCurrency(impact.boostValue)}
+                  </span>
+                </div>
+
+                <p className="mt-3 text-xs leading-5 text-slate-600">
+                  <span className="font-semibold text-slate-900">Services:</span>{" "}
+                  {primaryPackage.includedServices.join(" · ")}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-slate-600">
+                  <span className="font-semibold text-slate-900">AI insight:</span>{" "}
+                  {primaryPackage.aiInsight}
+                </p>
+                <p className="mt-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700">
+                  Revenue boost: +{formatCurrency(impact.boostValue)} ({impact.boostPercent.toFixed(0)}%) vs base booking
+                </p>
+                <p className="mt-2 text-xs text-slate-600">
+                  Conversion likelihood: {(primaryPackage.conversionLikelihood * 100).toFixed(0)}% · Trigger: {primaryPackage.recommendedWhen}
+                </p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
 
       <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
         <div className="border-b border-slate-200/80 pb-3">

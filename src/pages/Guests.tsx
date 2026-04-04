@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 import { guests } from "../data/guests";
 import { predictGuestValue } from "../services/predictionService.ts";
+import { getPurchaseLikelihood } from "../services/recommendationService.ts";
 import {
-  generatePersonalizedMessage,
-  getPurchaseLikelihood,
-  getRecommendations,
-} from "../services/recommendationService.ts";
+  estimatePackageRevenueBoost,
+  getSmartPackageForGuest,
+} from "../services/packageRecommendationService";
 import { formatCurrency } from "../utils/formatCurrency";
 
 type GuestActionView = {
@@ -13,12 +13,16 @@ type GuestActionView = {
   segment: string;
   predictedSpend: number;
   insight: string;
-  recommendation: string;
+  packageName: string;
+  includedServices: string[];
+  bundlePrice: number;
+  revenueBoostValue: number;
+  revenueBoostPercent: number;
   whyRecommendation: string;
   revenueImpact: number;
   purchaseLikelihood: number;
   confidence: number;
-  preferences: string[];
+  recommendedWhen: string;
 };
 
 export default function Guests() {
@@ -28,8 +32,6 @@ export default function Guests() {
     ...guest,
     predictedSpend: predictGuestValue(guest),
     purchaseLikelihood: getPurchaseLikelihood(guest),
-    recommendations: getRecommendations(guest),
-    personalizedMessage: generatePersonalizedMessage(guest),
   }));
 
   const avgMatch =
@@ -41,28 +43,38 @@ export default function Guests() {
       : 0;
 
   const guestActionCards: GuestActionView[] = guestInsights.map((guest) => {
-    const topOffer = guest.recommendations[0] || "Personalized concierge package";
+    const matchedPackage = getSmartPackageForGuest(guest);
+    const packageImpact = estimatePackageRevenueBoost(matchedPackage);
     const purchaseLikelihood = Math.round((guest.purchaseLikelihood || 0) * 100);
     const confidence = Math.min(
       95,
-      Math.max(68, purchaseLikelihood + (guest.preferences?.length || 0) * 2),
+      Math.max(
+        70,
+        Math.round(
+          purchaseLikelihood * 0.55 + matchedPackage.confidence * 100 * 0.45,
+        ),
+      ),
     );
     const expectedGain = Math.round(
-      (guest.predictedSpend || 0) * ((guest.purchaseLikelihood || 0) * 0.22),
+      packageImpact.expectedUpsellRevenue * ((guest.purchaseLikelihood || 0) * 1.2),
     );
-    const primaryPreference = guest.preferences?.[0] || "resort experiences";
+    const preferenceSummary = (guest.preferences || []).join(", ") || "behavioral history";
 
     return {
       name: guest.name || "Guest",
       segment: guest.segment || "General",
       predictedSpend: guest.predictedSpend || 0,
-      insight: guest.personalizedMessage,
-      recommendation: topOffer,
-      whyRecommendation: `Top preference is ${primaryPreference} and behavioral profile indicates strong affinity for ${guest.segment?.toLowerCase() || "personalized"} offers.`,
+      insight: matchedPackage.aiInsight,
+      packageName: matchedPackage.packageName,
+      includedServices: matchedPackage.includedServices,
+      bundlePrice: matchedPackage.bundlePrice,
+      revenueBoostValue: packageImpact.boostValue,
+      revenueBoostPercent: packageImpact.boostPercent,
+      whyRecommendation: `${matchedPackage.reason} Preferences considered: ${preferenceSummary}.`,
       revenueImpact: expectedGain,
       purchaseLikelihood,
       confidence,
-      preferences: guest.preferences || [],
+      recommendedWhen: matchedPackage.recommendedWhen,
     };
   });
 
@@ -111,10 +123,10 @@ export default function Guests() {
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-100">
-                Offers
+                  Packages
               </p>
               <p className="mt-2 text-sm font-semibold text-white">
-                3 curated actions
+                  Smart bundle offers
               </p>
             </div>
           </div>
@@ -127,7 +139,7 @@ export default function Guests() {
             Guest Decision Feed
           </p>
           <h2 className="mt-2 text-xl font-semibold text-slate-950">
-            Personalized offers with revenue outcomes
+            Smart package recommendations with revenue outcomes
           </h2>
         </div>
 
@@ -188,13 +200,23 @@ export default function Guests() {
                 </div>
               </div>
 
+              <div className="mt-3 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-700">
+                  Recommended Package
+                </p>
+                <p className="mt-1 text-sm font-semibold text-cyan-900">
+                  {item.packageName} · {formatCurrency(item.bundlePrice)}
+                </p>
+              </div>
+
               <div className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
                 <p>
                   <span className="font-semibold text-slate-900">Insight:</span>{" "}
                   {item.insight}
                 </p>
-                <p className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 font-semibold text-cyan-800">
-                  Recommendation: {item.recommendation}
+                <p className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                  <span className="font-semibold text-slate-900">Included Services:</span>{" "}
+                  {item.includedServices.join(" · ")}
                 </p>
                 <p>
                   <span className="font-semibold text-slate-900">Why this recommendation:</span>{" "}
@@ -203,17 +225,12 @@ export default function Guests() {
                 <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 font-semibold text-emerald-700">
                   Revenue Impact: +{formatCurrency(item.revenueImpact)} expected upsell
                 </p>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                {item.preferences.map((preference) => (
-                  <span
-                    key={`${item.name}-${preference}`}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700"
-                  >
-                    {preference}
-                  </span>
-                ))}
+                <p className="rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 font-semibold text-violet-700">
+                  Revenue Boost: +{formatCurrency(item.revenueBoostValue)} ({item.revenueBoostPercent.toFixed(0)}%) vs base booking
+                </p>
+                <p className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs leading-5 text-slate-600">
+                  Recommended when: {item.recommendedWhen}
+                </p>
               </div>
             </article>
           ))}
