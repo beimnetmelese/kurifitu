@@ -314,10 +314,7 @@ export function InventoryPage({
         </div>
       </div>
 
-      <SectionCard
-        title="What-If Simulator"
-        eyebrow="Judge-friendly scenario engine"
-      >
+      <SectionCard title="What-If Simulator">
         <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
           <div className="space-y-4 rounded-[28px] border border-slate-200 bg-slate-50 p-4">
             <div className="flex flex-wrap gap-2">
