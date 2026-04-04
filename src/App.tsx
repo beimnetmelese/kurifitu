@@ -30,6 +30,7 @@ import AssistantPage from "./pages/Assistant";
 import GuestFeedbackPage from "./pages/Feedback";
 import RoomControlsPage from "./pages/RoomControls";
 import MenuSuggestionsPage from "./pages/MenuSuggestions";
+import kuriftuLogo from "./assets/kuriftu.png";
 
 type AppMode = "admin" | "guest";
 
@@ -333,9 +334,11 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
           <header className="sticky top-4 z-30 mb-6 rounded-[28px] border border-white/80 bg-white/92 px-5 py-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-300 to-emerald-500 text-base font-black text-slate-950 shadow-[0_12px_28px_rgba(34,197,94,0.18)]">
-                  G
-                </div>
+                <img
+                  src={kuriftuLogo}
+                  alt="Kuriftu logo"
+                  className="h-11 w-11 rounded-2xl object-cover ring-1 ring-white/70 shadow-[0_12px_28px_rgba(34,197,94,0.18)]"
+                />
                 <div>
                   <p className="text-sm font-semibold text-slate-950">
                     Kurifitu Go Guest
@@ -514,9 +517,11 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
         <header className="sticky top-4 z-30 mb-6 rounded-[28px] border border-white/80 bg-white/92 px-5 py-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-lime-300 to-lime-500 text-base font-black text-slate-950 shadow-[0_12px_28px_rgba(132,204,22,0.22)]">
-                A
-              </div>
+              <img
+                src={kuriftuLogo}
+                alt="Kuriftu logo"
+                className="h-11 w-11 rounded-2xl object-cover ring-1 ring-white/70 shadow-[0_12px_28px_rgba(132,204,22,0.22)]"
+              />
               <div>
                 <p className="text-sm font-semibold text-slate-950">
                   Kurifitu Go Admin

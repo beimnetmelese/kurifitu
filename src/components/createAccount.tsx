@@ -8,6 +8,7 @@ import {
   FiMail,
   FiUser,
 } from "react-icons/fi";
+import kuriftuLogo from "../assets/kuriftu.png";
 
 type RegisterPayload = {
   username: string;
@@ -140,6 +141,11 @@ export default function CreateAccount() {
         <div className="relative flex flex-col justify-between overflow-hidden bg-slate-950 px-6 py-8 text-white sm:px-10 sm:py-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.2),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.18),transparent_28%)]" />
           <div className="relative max-w-xl">
+            <img
+              src={kuriftuLogo}
+              alt="Kuriftu logo"
+              className="h-14 w-14 rounded-2xl border border-white/20 object-cover shadow-[0_12px_30px_rgba(8,145,178,0.24)]"
+            />
             <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-100 backdrop-blur">
               <FiCheckCircle className="h-4 w-4" />
               New Account

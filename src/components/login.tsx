@@ -1,5 +1,6 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { FiEye, FiEyeOff, FiLock, FiMail, FiShield } from "react-icons/fi";
+import kuriftuLogo from "../assets/kuriftu.png";
 
 type LoginResponse = {
   refresh: string;
@@ -116,9 +117,11 @@ export default function AdminLogin({ onLoginSuccess }: LoginProps) {
         <div className="flex items-center justify-center px-5 py-8 sm:px-8 lg:px-10">
           <div className="w-full max-w-md">
             <div className="mb-8 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl border border-cyan-100 bg-cyan-50 text-cyan-700 shadow-[0_12px_30px_rgba(14,165,233,0.18)]">
-                <FiLock className="h-7 w-7" />
-              </div>
+              <img
+                src={kuriftuLogo}
+                alt="Kuriftu logo"
+                className="mx-auto h-16 w-16 rounded-3xl border border-cyan-100 bg-cyan-50 object-cover shadow-[0_12px_30px_rgba(14,165,233,0.18)]"
+              />
               <h2 className="mt-5 text-3xl font-semibold tracking-tight text-slate-950">
                 Sign in
               </h2>
