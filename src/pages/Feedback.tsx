@@ -446,7 +446,7 @@ const Feedback = ({ onNavigate }: FeedbackProps = {}) => {
                       <div className="flex items-center gap-2 mb-4 pb-2 border-b border-stone-100">
                         <FiClock className="w-4 h-4 text-amber-600" />
                         <h3 className="font-semibold text-stone-800 tracking-wide">
-                          RECENT GUEST TESTIMONIALS
+                          YOUR RECENT GUEST TESTIMONIALS
                         </h3>
                       </div>
                       <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-2">
