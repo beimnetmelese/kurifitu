@@ -1,6 +1,5 @@
 import { useState } from "react";
-import DashboardPage from "./pages/Dashboard";
-import AnalyticsPage from "./pages/Analytics";
+import RevenueOverviewPage from "./pages/RevenueOverview";
 import GuestsPage from "./pages/Guests";
 import PricingPage from "./pages/Pricing";
 import SegmentsPage from "./pages/Segments";
@@ -41,8 +40,7 @@ type AdminPageKey =
   | "inventory"
   | "twin"
   | "strategy"
-  | "dashboard"
-  | "analytics"
+  | "revenueOverview"
   | "guests"
   | "segments"
   | "pricing"
@@ -74,11 +72,10 @@ const adminTabs: { key: AdminPageKey; label: string; detail: string }[] = [
     detail: "Scenario planning and what-if",
   },
   {
-    key: "dashboard",
-    label: "Dashboard",
-    detail: "Revenue and occupancy overview",
+    key: "revenueOverview",
+    label: "Revenue Overview",
+    detail: "AI revenue command center",
   },
-  { key: "analytics", label: "Analytics", detail: "Deep performance analysis" },
   {
     key: "guests",
     label: "Guests",
@@ -126,7 +123,7 @@ const guestTabs: { key: GuestPageKey; label: string; detail: string }[] = [
 
 function App({ mode = "admin" }: { mode?: AppMode }) {
   const isGuestMode = mode === "guest";
-  const [adminPage, setAdminPage] = useState<AdminPageKey>("dashboard");
+  const [adminPage, setAdminPage] = useState<AdminPageKey>("revenueOverview");
   const [guestPage, setGuestPage] = useState<GuestPageKey>("home");
   const [adminScenario, setAdminScenario] =
     useState<ScenarioKey>("Calm Morning");
@@ -441,10 +438,8 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
             onScenarioChange={setAdminScenario}
           />
         );
-      case "dashboard":
-        return <DashboardPage />;
-      case "analytics":
-        return <AnalyticsPage />;
+      case "revenueOverview":
+        return <RevenueOverviewPage />;
       case "guests":
         return <GuestsPage />;
       case "segments":
