@@ -18,6 +18,23 @@ export type ConversationMessage = {
   content: string;
 };
 
+export type RoleAwareMode = "guest" | "admin";
+
+type AdminAssistantContext = {
+  currentPage?: string;
+  scenario?: string;
+  kpis?: string[];
+  recommendation?: string;
+  modules?: string[];
+};
+
+type FeedbackEntryForAI = {
+  feedback_text: string;
+  feedback_type: "positive" | "negative";
+  feedback_time: string;
+  sector?: string | null;
+};
+
 interface GuestContext {
   name?: string;
   occasion?: string;
@@ -175,4 +192,174 @@ export const getPersonalizedResponse = async (
   };
 
   return await sendGroqMessage(message, previousMessages, context);
+};
+
+export const generateFeedbackExecutiveAnalysis = async (
+  feedbackEntries: FeedbackEntryForAI[],
+  focusNote?: string,
+): Promise<string> => {
+  if (!GROQ_API_KEY) {
+    return "Groq API key is missing. Add VITE_GROQ_API_KEY to generate AI feedback analysis.";
+  }
+
+  const dataset = feedbackEntries.slice(0, 80).map((entry) => ({
+    type: entry.feedback_type,
+    sector: entry.sector ?? "General",
+    text: entry.feedback_text,
+    time: entry.feedback_time,
+  }));
+
+  const messages: GroqMessage[] = [
+    {
+      role: "system",
+      content:
+        "You are a senior customer-experience strategist for Kurifitu Go. Analyze guest feedback for executive decision-making. Respond in exactly 4 concise paragraphs (no bullets, no numbering): paragraph 1 = sentiment summary and trend, paragraph 2 = positive highlights and strengths, paragraph 3 = risks/pain points and likely root causes, paragraph 4 = actionable recommendations with measurable next steps. Keep the output professional and practical.",
+    },
+    {
+      role: "user",
+      content: `Analyze this feedback dataset and produce the 4-paragraph brief. ${focusNote ? `Focus note: ${focusNote}.` : ""}\n\nFeedback data:\n${JSON.stringify(dataset)}`,
+    },
+  ];
+
+  try {
+    const response = await fetch(GROQ_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages,
+        temperature: 0.4,
+        max_tokens: 700,
+        top_p: 0.9,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Groq analysis failed: ${response.status} ${JSON.stringify(errorData)}`);
+    }
+
+    const data = await response.json();
+    const content: string =
+      data?.choices?.[0]?.message?.content?.trim() ||
+      "Unable to produce analysis right now. Please try again.";
+
+    return content;
+  } catch (error) {
+    console.error("Feedback analysis failed:", error);
+    return "AI analysis is temporarily unavailable. Please try again in a moment.";
+  }
+};
+
+export const getRoleAwareResponse = async ({
+  mode,
+  userMessage,
+  previousMessages,
+  adminContext,
+}: {
+  mode: RoleAwareMode;
+  userMessage: string;
+  previousMessages: ConversationMessage[];
+  adminContext?: AdminAssistantContext;
+}): Promise<GroqResponse> => {
+  if (mode === "guest") {
+    const normalized = userMessage.toLowerCase();
+    const bookingIntent =
+      /(book|booking|reserve|reservation)/.test(normalized) &&
+      /(table|dinner|lunch|tonight|this|seat|for\s+\d+)/.test(normalized);
+
+    if (bookingIntent) {
+      const reference = `KG-${Math.floor(100000 + Math.random() * 900000)}`;
+      return {
+        reply: `Booked. Your reservation request is now confirmed in Kurifitu Go with reference ${reference}. I have secured your booking and the host team will prepare your table based on your request details. If you want, I can also add a note for dietary preferences, preferred seating area, or celebration setup before your arrival.`,
+        followUps: [
+          "Add dietary preference to my booking",
+          "Set romantic seating",
+          "Change party size",
+        ],
+      };
+    }
+
+    return sendGroqMessage(userMessage, previousMessages);
+  }
+
+  if (!GROQ_API_KEY) {
+    return {
+      reply:
+        "Groq API key is missing. Add VITE_GROQ_API_KEY for the admin AI assistant.",
+      followUps: [
+        "Show dashboard priorities",
+        "Summarize feedback risks",
+        "Recommend staffing actions",
+      ],
+    };
+  }
+
+  const systemPrompt = `You are Kurifitu Go Admin AI Copilot. You support leaders with operational, feedback, scheduling, pricing, segmentation, maintenance, and strategy decisions.
+
+Current context:
+- Current page: ${adminContext?.currentPage ?? "Unknown"}
+- Scenario: ${adminContext?.scenario ?? "Not provided"}
+- KPI snapshot: ${(adminContext?.kpis ?? []).join(" | ") || "Not provided"}
+- Active recommendation: ${adminContext?.recommendation ?? "Not provided"}
+- Available modules: ${(adminContext?.modules ?? []).join(", ") || "Not provided"}
+
+Response rules:
+1. Answer in one compact paragraph first.
+2. Then provide 3 concrete actions as short bullets using '-' prefix.
+3. Prioritize measurable outcomes and operational impact.
+4. If user asks about feedback, include positives, risks, and next actions.
+5. If user asks about staffing/scheduling, include shift and workload guidance.`;
+
+  try {
+    const messages: GroqMessage[] = [
+      { role: "system", content: systemPrompt },
+      ...(previousMessages.map((msg) => ({ role: msg.role, content: msg.content })) as GroqMessage[]),
+      { role: "user", content: userMessage },
+    ];
+
+    const response = await fetch(GROQ_API_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages,
+        temperature: 0.45,
+        max_tokens: 650,
+        top_p: 0.9,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Groq admin assistant failed: ${response.status} ${JSON.stringify(errorData)}`);
+    }
+
+    const data = await response.json();
+    const reply: string =
+      data?.choices?.[0]?.message?.content?.trim() ||
+      "I could not prepare the admin insight right now. Please try again.";
+
+    return {
+      reply,
+      followUps: [
+        "What should we do in the next 60 minutes?",
+        "Summarize biggest feedback risks",
+        "Give staffing adjustments by area",
+      ],
+    };
+  } catch (error) {
+    console.error("Admin AI response failed:", error);
+    return {
+      reply:
+        "I am temporarily unable to connect to AI services. Please retry in a moment.",
+      followUps: ["Dashboard summary", "Feedback actions", "Staffing plan"],
+    };
+  }
 };

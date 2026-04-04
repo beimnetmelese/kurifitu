@@ -35,6 +35,7 @@ import GuestFeedbackPage from "./pages/Feedback";
 import RoomControlsPage from "./pages/RoomControls";
 import MenuSuggestionsPage from "./pages/MenuSuggestions";
 import kuriftuLogo from "./assets/kuriftu.png";
+import FloatingAIChat from "./components/FloatingAIChat";
 
 type AppMode = "admin" | "guest";
 
@@ -436,6 +437,11 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
             </section>
           </main>
         </div>
+        <FloatingAIChat
+          mode="guest"
+          title="Kurifitu Go Guest AI"
+          subtitle="Dining, comfort, and personalized support"
+        />
       </div>
     );
   }
@@ -646,6 +652,20 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
           </section>
         </main>
       </div>
+      <FloatingAIChat
+        mode="admin"
+        title="Kurifitu Go Admin AI"
+        subtitle="Dashboard, feedback, staffing, and strategy intelligence"
+        adminContext={{
+          currentPage: currentAdminTab.label,
+          scenario: adminScenario,
+          kpis: adminKpis.map(
+            (kpi) => `${kpi.label}: ${kpi.value}${kpi.suffix ?? ""}`,
+          ),
+          recommendation: adminRecommendation,
+          modules: adminTabs.map((tab) => tab.label),
+        }}
+      />
     </div>
   );
 }

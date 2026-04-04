@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import {
+  FiAward,
   FiClock,
   FiMessageSquare,
+  FiTrendingUp,
   FiThumbsDown,
   FiThumbsUp,
 } from "react-icons/fi";
+import { generateFeedbackExecutiveAnalysis } from "../services/groqApi";
 
 type Feedback = {
   id: number;
@@ -19,6 +22,10 @@ const FeedbackList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"ALL" | "positive" | "negative">("ALL");
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<string>("");
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [analysisFocus, setAnalysisFocus] = useState("");
 
   useEffect(() => {
     const url = "https://bewnet.pythonanywhere.com/";
@@ -45,6 +52,42 @@ const FeedbackList = () => {
     if (filter === "ALL") return true;
     return feedback.feedback_type.toLowerCase() === filter;
   });
+
+  const positiveCount = filteredFeedbacks.filter(
+    (item) => item.feedback_type === "positive",
+  ).length;
+  const negativeCount = filteredFeedbacks.filter(
+    (item) => item.feedback_type === "negative",
+  ).length;
+
+  const runAiAnalysis = async () => {
+    if (filteredFeedbacks.length === 0 || analysisLoading) return;
+
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+
+    try {
+      const response = await generateFeedbackExecutiveAnalysis(
+        filteredFeedbacks.map((entry) => ({
+          feedback_text: entry.feedback_text,
+          feedback_type: entry.feedback_type,
+          feedback_time: entry.feedback_time,
+          sector: entry.sector,
+        })),
+        analysisFocus.trim() || undefined,
+      );
+
+      setAnalysisResult(response);
+    } catch (analysisErr) {
+      setAnalysisError(
+        analysisErr instanceof Error
+          ? analysisErr.message
+          : "Failed to generate AI analysis.",
+      );
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -140,6 +183,76 @@ const FeedbackList = () => {
           ))}
         </div>
       )}
+
+      <section className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-5 text-white shadow-[0_20px_55px_rgba(15,23,42,0.24)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.22),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(52,211,153,0.2),transparent_28%)]" />
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100">
+                <FiAward className="h-4 w-4" />
+                AI Insight Brief
+              </p>
+              <h3 className="mt-3 text-2xl font-semibold tracking-tight">
+                Kurifitu Go Feedback Intelligence
+              </h3>
+              <p className="mt-1 text-sm text-slate-300">
+                Get a structured paragraph brief with summary, positives, risks,
+                and actionable recommendations.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-sm">
+              <FiTrendingUp className="h-4 w-4 text-cyan-200" />
+              <span>{positiveCount} positive</span>
+              <span className="text-slate-400">/</span>
+              <span>{negativeCount} negative</span>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_auto]">
+            <input
+              value={analysisFocus}
+              onChange={(event) => setAnalysisFocus(event.target.value)}
+              placeholder="Optional focus for AI (e.g., service speed, room comfort, breakfast quality)"
+              className="h-11 rounded-xl border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-slate-300 outline-none focus:border-cyan-300 focus:ring-2 focus:ring-cyan-400/35"
+            />
+            <button
+              type="button"
+              onClick={runAiAnalysis}
+              disabled={analysisLoading || filteredFeedbacks.length === 0}
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 px-5 text-sm font-semibold text-slate-950 shadow-[0_16px_36px_rgba(16,185,129,0.3)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-65"
+            >
+              {analysisLoading
+                ? "Analyzing feedback..."
+                : "Generate AI Analysis"}
+            </button>
+          </div>
+
+          {analysisError ? (
+            <div className="mt-4 rounded-xl border border-rose-200/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+              {analysisError}
+            </div>
+          ) : null}
+
+          {analysisResult ? (
+            <div className="mt-4 rounded-2xl border border-white/15 bg-slate-900/55 p-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-200">
+                AI Executive Summary
+              </p>
+              <div className="space-y-3 text-sm leading-7 text-slate-100">
+                {analysisResult
+                  .split(/\n\s*\n/)
+                  .filter((paragraph) => paragraph.trim().length > 0)
+                  .map((paragraph, index) => (
+                    <p key={`${index}-${paragraph.slice(0, 24)}`}>
+                      {paragraph}
+                    </p>
+                  ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </section>
     </div>
   );
 };
