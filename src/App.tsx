@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import RevenueOverviewPage from "./pages/RevenueOverview";
 import GuestsPage from "./pages/Guests";
 import PricingPage from "./pages/Pricing";
@@ -303,6 +303,10 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
     localStorage.removeItem("is_admin");
     window.location.replace("/");
   };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [adminPage, guestPage, isGuestMode]);
 
   if (isGuestMode) {
     const currentGuestTab =
