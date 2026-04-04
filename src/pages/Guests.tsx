@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import SimulatedAiStatus from "../components/common/SimulatedAiStatus";
 import { guests } from "../data/guests";
 import { predictGuestValue } from "../services/predictionService.ts";
 import { getPurchaseLikelihood } from "../services/recommendationService.ts";
@@ -132,6 +133,13 @@ export default function Guests() {
           </div>
         </div>
       </div>
+
+      <SimulatedAiStatus
+        modelName="GuestNudge-Sim v3"
+        domain="Guest spend prediction and package personalization"
+        confidence={86}
+        cadenceLabel="Every 15 minutes"
+      />
 
       <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
         <div className="border-b border-slate-200/80 pb-3">

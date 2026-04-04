@@ -1,4 +1,5 @@
 import { pricing } from "../data/pricing";
+import SimulatedAiStatus from "../components/common/SimulatedAiStatus";
 import { buildPricingInsights } from "../services/pricingService.ts";
 import { formatCurrency } from "../utils/formatCurrency";
 
@@ -114,6 +115,13 @@ export default function Pricing() {
           </div>
         </div>
       </div>
+
+      <SimulatedAiStatus
+        modelName="PriceOptimizer-Sim v1"
+        domain="Demand-aware dynamic room pricing"
+        confidence={82}
+        cadenceLabel="Every 20 minutes"
+      />
 
       <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
         <div className="border-b border-slate-200/80 pb-3">

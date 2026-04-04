@@ -13,6 +13,7 @@ import {
 import { Bar, Doughnut, Line } from "react-chartjs-2";
 import MetricCard from "../components/cards/MetricCard";
 import DecisionInsightCard from "../components/common/DecisionInsightCard";
+import SimulatedAiStatus from "../components/common/SimulatedAiStatus";
 import { analytics } from "../data/analytics";
 import { useDashboardData } from "../hooks/useDashboardData";
 import {
@@ -256,6 +257,13 @@ export default function RevenueOverview() {
           value={formatCurrency(totalUplift)}
         />
       </div>
+
+      <SimulatedAiStatus
+        modelName="RevenuePilot-Sim v2"
+        domain="Occupancy, pricing, upsell, and package optimization"
+        confidence={84}
+        cadenceLabel="Every 30 minutes"
+      />
 
       <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
         <div className="border-b border-slate-200/80 pb-3">

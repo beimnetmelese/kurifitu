@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import DecisionInsightCard from "../components/common/DecisionInsightCard";
+import SimulatedAiStatus from "../components/common/SimulatedAiStatus";
 import { guests } from "../data/guests";
 import {
   estimatePackageRevenueBoost,
@@ -199,6 +200,13 @@ export default function Segments() {
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-violet-200/90">
+
+        <SimulatedAiStatus
+          modelName="SegmentStrategist-Sim v2"
+          domain="Segment ranking, campaign targeting, and bundle selection"
+          confidence={80}
+          cadenceLabel="Hourly"
+        />
               Segment Intelligence
             </p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
