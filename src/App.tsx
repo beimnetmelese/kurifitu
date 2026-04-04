@@ -10,6 +10,10 @@ import { InventoryPage } from "./pages/InventoryPage";
 import { TwinPage } from "./pages/TwinPage";
 import { StrategyPage } from "./pages/StrategyPage";
 import {
+  getUserProfileFromStorage,
+  fetchUserProfile,
+} from "./services/userService";
+import {
   initialDecisions,
   initialHighlights,
   initialInventory,
@@ -178,6 +182,16 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
     useState<ScenarioKey>("Calm Morning");
   const adminPreset = scenarioPresets[adminScenario];
 
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      let profile = getUserProfileFromStorage();
+      if (!profile) {
+        profile = await fetchUserProfile();
+      }
+    };
+    loadUserProfile();
+  }, []);
+
   const adminOccupancyTrend = [68, 70, 71, 75, 78, 81].map(
     (value, index) => value + adminPreset.activityBias + (index === 5 ? 1 : 0),
   );
@@ -301,6 +315,7 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("is_admin");
+    localStorage.removeItem("user_profile");
     window.location.replace("/");
   };
 

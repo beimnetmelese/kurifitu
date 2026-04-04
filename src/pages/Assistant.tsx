@@ -2,10 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   fetchAssistantSuggestions,
   fetchGuestProfile,
-  sendAssistantMessage,
   type AssistantSuggestion,
   type GuestProfile,
 } from "../services/mockApi";
+import {
+  getPersonalizedResponse,
+  type ConversationMessage,
+} from "../services/groqApi";
 import {
   FiArrowLeft,
   FiX,
@@ -18,6 +21,7 @@ import {
   FiHeart,
   FiTrendingUp,
   FiGift,
+  FiWifiOff,
 } from "react-icons/fi";
 import { MdVerified, MdGrass, MdNoFood } from "react-icons/md";
 
@@ -25,6 +29,7 @@ type ChatMessage = {
   id: number;
   text: string;
   sender: "user" | "bot";
+  timestamp?: Date;
 };
 
 type AssistantProps = {
@@ -43,17 +48,27 @@ const Assistant = ({
       id: 1,
       text: "Good evening. I'm your personal AI Assistant at Kuriftu African Village. How may I enhance your dining experience this evening?",
       sender: "bot",
+      timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState("");
   const [profile, setProfile] = useState<GuestProfile | null>(null);
   const [suggestions, setSuggestions] = useState<AssistantSuggestion[]>([]);
-  const [quickReplies, setQuickReplies] = useState<string[]>([]);
+  const [quickReplies, setQuickReplies] = useState<string[]>([
+    "Menu recommendations",
+    "Set room ambiance",
+    "Dietary options",
+    "Tell me about specials",
+  ]);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const [sending, setSending] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
   const nextMessageId = useMemo(() => messages.length + 1, [messages.length]);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Store conversation history for context
+  const conversationHistory = useRef<ConversationMessage[]>([]);
 
   useEffect(() => {
     const container = chatContainerRef.current;
@@ -82,7 +97,9 @@ const Assistant = ({
       .then((data) => {
         if (!active) return;
         setSuggestions(data.suggestions);
-        setQuickReplies(data.quickReplies);
+        if (data.quickReplies && data.quickReplies.length > 0) {
+          setQuickReplies(data.quickReplies);
+        }
       })
       .finally(() => {
         if (active) setLoadingSuggestions(false);
@@ -98,27 +115,75 @@ const Assistant = ({
 
     setInput("");
     setSending(true);
-    const newMessage: ChatMessage = {
+
+    // Add user message
+    const userMessage: ChatMessage = {
       id: nextMessageId,
       text: content,
       sender: "user",
+      timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages((prev) => [...prev, userMessage]);
+
+    // Add to conversation history
+    conversationHistory.current.push({ role: "user", content });
 
     try {
-      const response = await sendAssistantMessage(content);
+      // Get AI response from Groq
+      const response = await getPersonalizedResponse(
+        content,
+        profile,
+        conversationHistory.current,
+      );
+
       const botMessage: ChatMessage = {
         id: nextMessageId + 1,
         text: response.reply,
         sender: "bot",
+        timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botMessage]);
-      if (response.followUps.length) {
-        setQuickReplies(response.followUps);
+
+      // Add bot response to history
+      conversationHistory.current.push({
+        role: "assistant",
+        content: response.reply,
+      });
+
+      // Update quick replies
+      if (response.followUps && response.followUps.length > 0) {
+        setQuickReplies(response.followUps.slice(0, 4));
       }
+
+      setIsOnline(true);
+    } catch (error) {
+      console.error("Error getting AI response:", error);
+      setIsOnline(false);
+
+      // Fallback response
+      const errorMessage: ChatMessage = {
+        id: nextMessageId + 1,
+        text: "I apologize, but I'm having trouble connecting. Please check your internet connection or speak with our staff for assistance. I'll be back online shortly!",
+        sender: "bot",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setSending(false);
     }
+  };
+
+  // Clear conversation history
+  const clearHistory = () => {
+    conversationHistory.current = [];
+    setMessages([
+      {
+        id: Date.now(),
+        text: "Conversation history cleared. How can I help you today?",
+        sender: "bot",
+        timestamp: new Date(),
+      },
+    ]);
   };
 
   return (
@@ -142,10 +207,21 @@ const Assistant = ({
             </button>
 
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-stone-400 tracking-wide">
-                Assistant ACTIVE
-              </span>
+              {isOnline ? (
+                <>
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-stone-400 tracking-wide">
+                    AI ACTIVE
+                  </span>
+                </>
+              ) : (
+                <>
+                  <FiWifiOff className="w-3 h-3 text-rose-500" />
+                  <span className="text-xs text-rose-500 tracking-wide">
+                    OFFLINE MODE
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -334,18 +410,28 @@ const Assistant = ({
             <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-stone-100 h-[calc(100vh-12rem)] flex flex-col overflow-hidden">
               {/* Chat Header */}
               <div className="border-b border-stone-100 px-6 py-5 bg-gradient-to-r from-white to-stone-50/50">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-full flex items-center justify-center">
-                    <FiMessageSquare className="w-5 h-5 text-white" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-700 rounded-full flex items-center justify-center">
+                      <FiMessageSquare className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="font-semibold text-stone-800">
+                        Assistant Chat
+                      </h2>
+                      <p className="text-xs text-stone-400">
+                        {isOnline
+                          ? "AI-powered responses"
+                          : "Using offline fallback"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="font-semibold text-stone-800">
-                      Assistant Chat
-                    </h2>
-                    <p className="text-xs text-stone-400">
-                      AI-powered personal assistance
-                    </p>
-                  </div>
+                  <button
+                    onClick={clearHistory}
+                    className="text-xs text-stone-400 hover:text-amber-600 transition-colors"
+                  >
+                    Clear chat
+                  </button>
                 </div>
               </div>
 
@@ -367,6 +453,14 @@ const Assistant = ({
                       }`}
                     >
                       <p className="text-sm leading-relaxed">{message.text}</p>
+                      {message.timestamp && (
+                        <p className="text-xs opacity-50 mt-1">
+                          {message.timestamp.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -416,7 +510,7 @@ const Assistant = ({
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                      placeholder="Type your message..."
+                      placeholder="Ask me anything about Kuriftu..."
                       className="w-full px-5 py-3 bg-stone-50 border border-stone-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all text-stone-700 placeholder-stone-400"
                     />
                   </div>
@@ -463,6 +557,13 @@ const Assistant = ({
         }
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        .animate-bounce {
+          animation: bounce 0.6s ease-in-out infinite;
         }
       `}</style>
     </div>

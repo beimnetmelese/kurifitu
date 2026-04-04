@@ -33,7 +33,7 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
     {
       key: "menuSuggestions" as const,
       icon: <MdOutlineRestaurantMenu className="w-7 h-7" />,
-      title: "Menu Guide",
+      title: "Menu Suggestion",
       description: "Discover dishes perfectly matched to your taste",
       accent: "from-emerald-500 to-emerald-600",
       gradient: "from-emerald-50 to-emerald-100",

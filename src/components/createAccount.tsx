@@ -57,13 +57,16 @@ export default function CreateAccount() {
     setSuccessMessage(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/auth/users/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "https://bewnet.pythonanywhere.com/auth/users/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+      );
 
       const data = (await response.json()) as
         | RegisterResponse
@@ -92,7 +95,7 @@ export default function CreateAccount() {
       const created = data as RegisterResponse;
 
       const loginResponse = await fetch(
-        "http://127.0.0.1:8000/auth/jwt/create/",
+        "http://bewnet.pythonanywhere.com/auth/jwt/create/",
         {
           method: "POST",
           headers: {

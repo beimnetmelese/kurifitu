@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   FiArrowLeft,
   FiFilter,
@@ -44,11 +44,22 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
     vegetarian: false,
     glutenFree: false,
     adventurous: true,
-    priceRange: "any",
+    priceRange: { min: 0, max: 100 },
+    serviceType: "all",
   });
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(true);
+  const [activeDish, setActiveDish] = useState<Recommendation | null>(null);
+  const [reservationOpen, setReservationOpen] = useState(false);
+  const [reservationSuccess, setReservationSuccess] = useState<string | null>(null);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [reservationDetails, setReservationDetails] = useState({
+    date: "",
+    time: "",
+    guests: 2,
+    notes: "",
+  });
 
   const updatePreferences = (partial: Partial<RecommendationPreferences>) => {
     setLoading(true);
@@ -69,15 +80,75 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
     };
   }, [preferences]);
 
-  const getPriceIcon = (range: string) => {
-    switch (range) {
-      case "value":
-        return <FiDollarSign className="text-green-600" />;
-      case "premium":
-        return <FiAward className="text-amber-600" />;
-      default:
-        return <FiTrendingUp className="text-stone-600" />;
+  useEffect(() => {
+    if (showSuccessPopup) {
+      const timer = setTimeout(() => {
+        setShowSuccessPopup(false);
+      }, 5000); // Auto-dismiss after 5 seconds
+
+      return () => clearTimeout(timer);
     }
+  }, [showSuccessPopup]);
+
+  const getPriceIcon = (price: number) => {
+    if (price <= 20) return <FiDollarSign className="text-green-600" />;
+    if (price <= 40) return <FiTrendingUp className="text-amber-600" />;
+    return <FiAward className="text-purple-600" />;
+  };
+
+  const dishImages: Record<string, string> = {
+    dish_1:
+      "https://images.unsplash.com/photo-1553621042-f6e147245754?auto=format&fit=crop&w=1200&q=80",
+    dish_2:
+      "https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?auto=format&fit=crop&w=1200&q=80",
+    dish_3:
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80",
+    dish_4:
+      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1200&q=80",
+    dish_5:
+      "https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=1200&q=80",
+    dish_6:
+      "https://images.unsplash.com/photo-1529692236671-f1f1f6d1af6b?auto=format&fit=crop&w=1200&q=80",
+    spa_1:
+      "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1200&q=80",
+    spa_2:
+      "https://images.unsplash.com/photo-1596178060810-fb4bd482ee2c?auto=format&fit=crop&w=1200&q=80",
+  };
+
+  const openReservation = (dish: Recommendation) => {
+    setActiveDish(dish);
+    setReservationOpen(true);
+    setReservationSuccess(null);
+  };
+
+  const closeReservation = () => {
+    setReservationOpen(false);
+    setActiveDish(null);
+    setReservationDetails({ date: "", time: "", guests: 2, notes: "" });
+    setReservationSuccess(null);
+  };
+
+  const handleReservationChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = event.target;
+    setReservationDetails((prev) => ({
+      ...prev,
+      [name]: name === "guests" ? Number(value) : value,
+    }));
+  };
+
+  const handleReservationSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!activeDish) return;
+
+    setReservationOpen(false);
+    setReservationSuccess(
+      `Your reservation for ${activeDish.name} is confirmed for ${reservationDetails.date} at ${reservationDetails.time}. Our concierge will reach out shortly to finalize your request.`,
+    );
+    setShowSuccessPopup(true);
+    setActiveDish(null);
+    setReservationDetails({ date: "", time: "", guests: 2, notes: "" });
   };
 
   return (
@@ -101,12 +172,12 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
             <h1 className="text-5xl font-light text-stone-900 mt-4 mb-3 tracking-tight">
               Curated{" "}
               <span className="font-semibold bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
-                Gastronomy
+                Experiences
               </span>
             </h1>
             <p className="text-stone-500 text-lg font-light max-w-2xl">
               Personalized selections crafted to your palate preferences and
-              dietary requirements
+              wellness needs
             </p>
           </div>
         </div>
@@ -139,17 +210,18 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
         {/* Filters Panel - Luxury Design */}
         {showFilters && (
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-stone-100 p-8 mb-10">
-            <div className="flex flex-wrap gap-6 items-end">
-              <div className="flex-1 min-w-[200px]">
-                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">
-                  Culinary Preferences
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Dietary Preferences */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-4">
+                  Dietary Preferences
                 </label>
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={() =>
                       updatePreferences({ spicy: !preferences.spicy })
                     }
-                    className={`px-5 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 ${
+                    className={`px-4 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 ${
                       preferences.spicy
                         ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg"
                         : "bg-stone-100 text-stone-700 hover:bg-stone-200"
@@ -162,7 +234,7 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
                     onClick={() =>
                       updatePreferences({ vegetarian: !preferences.vegetarian })
                     }
-                    className={`px-5 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 ${
+                    className={`px-4 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 ${
                       preferences.vegetarian
                         ? "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg"
                         : "bg-stone-100 text-stone-700 hover:bg-stone-200"
@@ -175,7 +247,7 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
                     onClick={() =>
                       updatePreferences({ glutenFree: !preferences.glutenFree })
                     }
-                    className={`px-5 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 ${
+                    className={`px-4 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 ${
                       preferences.glutenFree
                         ? "bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-lg"
                         : "bg-stone-100 text-stone-700 hover:bg-stone-200"
@@ -190,7 +262,7 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
                         adventurous: !preferences.adventurous,
                       })
                     }
-                    className={`px-5 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 ${
+                    className={`px-4 py-2.5 rounded-full transition-all duration-300 flex items-center gap-2 ${
                       preferences.adventurous
                         ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg"
                         : "bg-stone-100 text-stone-700 hover:bg-stone-200"
@@ -202,24 +274,80 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
                 </div>
               </div>
 
-              <div className="w-64">
-                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">
-                  Price Experience
+              {/* Price Range */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-4">
+                  Price Range
+                </label>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className="block text-xs text-stone-400 mb-1">Min Price</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="200"
+                        value={preferences.priceRange.min}
+                        onChange={(e) =>
+                          updatePreferences({
+                            priceRange: {
+                              ...preferences.priceRange,
+                              min: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full px-3 py-2 bg-stone-100 text-stone-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs text-stone-400 mb-1">Max Price</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="200"
+                        value={preferences.priceRange.max}
+                        onChange={(e) =>
+                          updatePreferences({
+                            priceRange: {
+                              ...preferences.priceRange,
+                              max: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full px-3 py-2 bg-stone-100 text-stone-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all"
+                        placeholder="200"
+                      />
+                    </div>
+                  </div>
+                  <div className="text-xs text-stone-500">
+                    Current range: ${preferences.priceRange.min} - ${preferences.priceRange.max}
+                  </div>
+                </div>
+              </div>
+
+              {/* Service Type */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-4">
+                  Service Type
                 </label>
                 <select
-                  value={preferences.priceRange}
+                  value={preferences.serviceType}
                   onChange={(e) =>
                     updatePreferences({
-                      priceRange: e.target
-                        .value as RecommendationPreferences["priceRange"],
+                      serviceType: e.target.value as RecommendationPreferences["serviceType"],
                     })
                   }
-                  className="w-full px-5 py-2.5 bg-stone-100 text-stone-700 rounded-full focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all cursor-pointer"
+                  className="w-full px-4 py-3 bg-stone-100 text-stone-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all cursor-pointer"
                 >
-                  <option value="any">All Price Points</option>
-                  <option value="value">Classic Selection ($)</option>
-                  <option value="premium">Prestige Collection ($$$)</option>
+                  <option value="all">All Services</option>
+                  <option value="food">🍽️ Dining</option>
+                  <option value="spa">🧖 Spa & Wellness</option>
+                  <option value="wellness">🌿 Wellness</option>
                 </select>
+                <div className="mt-3 text-xs text-stone-500">
+                  Filter by service category
+                </div>
               </div>
             </div>
           </div>
@@ -272,9 +400,17 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
                     key={dish.id}
                     className="group bg-white rounded-3xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
                   >
-                    {/* Card Image Placeholder - Luxury Gradient */}
-                    <div className="relative h-56 bg-gradient-to-br from-amber-100 via-amber-50 to-stone-100 overflow-hidden">
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-500"></div>
+                    <div
+                        className="relative h-56 overflow-hidden bg-stone-100"
+                        style={{
+                          backgroundImage: dishImages[dish.id]
+                            ? `url(${dishImages[dish.id]})`
+                            : undefined,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }}
+                      >
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                       <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                         <button className="p-2 bg-white rounded-full shadow-md hover:bg-amber-50 transition-colors">
                           <FiHeart className="w-4 h-4 text-stone-600" />
@@ -298,11 +434,23 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
 
                     <div className="p-6">
                       <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-xl font-semibold text-stone-800 group-hover:text-amber-700 transition-colors">
-                          {dish.name}
-                        </h3>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-semibold text-stone-800 group-hover:text-amber-700 transition-colors">
+                            {dish.name}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                              dish.serviceType === 'food' ? 'bg-blue-100 text-blue-700' :
+                              dish.serviceType === 'spa' ? 'bg-purple-100 text-purple-700' :
+                              'bg-green-100 text-green-700'
+                            }`}>
+                              {dish.serviceType === 'food' ? '🍽️ Dining' :
+                               dish.serviceType === 'spa' ? '🧖 Spa' : '🌿 Wellness'}
+                            </span>
+                          </div>
+                        </div>
                         <div className="flex items-center gap-1">
-                          {getPriceIcon(preferences.priceRange)}
+                          {getPriceIcon(dish.price)}
                         </div>
                       </div>
 
@@ -335,7 +483,10 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
                             ${dish.price}
                           </div>
                         </div>
-                        <button className="group/btn relative px-6 py-2.5 bg-stone-800 text-white rounded-full hover:bg-amber-700 transition-all duration-300 overflow-hidden">
+                        <button
+                          onClick={() => openReservation(dish)}
+                          className="group/btn relative px-6 py-2.5 bg-stone-800 text-white rounded-full hover:bg-amber-700 transition-all duration-300 overflow-hidden"
+                        >
                           <span className="relative z-10 text-sm font-medium tracking-wide">
                             Reserve
                           </span>
@@ -348,6 +499,129 @@ const MenuSuggestions = ({ onNavigate }: MenuSuggestionsProps = {}) => {
               </div>
             )}
           </>
+        )}
+
+        {showSuccessPopup && reservationSuccess && (
+          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[100] max-w-sm">
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 shadow-lg animate-in slide-in-from-top-2 duration-300">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-green-800">Reservation Confirmed</p>
+                  <p className="text-sm text-green-700 mt-1">{reservationSuccess}</p>
+                </div>
+                <button
+                  onClick={() => setShowSuccessPopup(false)}
+                  className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center hover:bg-green-200 transition-colors"
+                >
+                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {reservationOpen && activeDish && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/80 px-4 py-8">
+            <div className="w-full max-w-2xl rounded-[32px] bg-white p-8 shadow-2xl ring-1 ring-slate-200">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-500">
+                    Reservation request
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold text-stone-900">
+                    Reserve {activeDish.name}
+                  </h2>
+                  <p className="mt-2 text-sm text-stone-500 max-w-2xl">
+                    Choose your preferred date and time for this service. Our guest services team will confirm your reservation and prepare the dish with professional care.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeReservation}
+                  className="rounded-full border border-stone-200 bg-stone-100 px-4 py-2 text-sm text-stone-700 hover:bg-stone-200 transition"
+                >
+                  Close
+                </button>
+              </div>
+
+              <form onSubmit={handleReservationSubmit} className="mt-8 grid gap-6 md:grid-cols-2">
+                <label className="block">
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+                    Date
+                  </span>
+                  <input
+                    type="date"
+                    name="date"
+                    value={reservationDetails.date}
+                    onChange={handleReservationChange}
+                    className="mt-2 w-full rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3 text-stone-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                    required
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+                    Time
+                  </span>
+                  <input
+                    type="time"
+                    name="time"
+                    value={reservationDetails.time}
+                    onChange={handleReservationChange}
+                    className="mt-2 w-full rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3 text-stone-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                    required
+                  />
+                </label>
+                <label className="block md:col-span-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+                    Guests
+                  </span>
+                  <input
+                    type="number"
+                    min={1}
+                    name="guests"
+                    value={reservationDetails.guests}
+                    onChange={handleReservationChange}
+                    className="mt-2 w-full rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3 text-stone-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                  />
+                </label>
+                <label className="block md:col-span-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">
+                    Special requests
+                  </span>
+                  <textarea
+                    name="notes"
+                    value={reservationDetails.notes}
+                    onChange={handleReservationChange}
+                    className="mt-2 w-full min-h-[120px] rounded-3xl border border-stone-200 bg-stone-50 px-4 py-3 text-stone-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100"
+                    placeholder="Please let us know any dietary preferences or timing notes"
+                  />
+                </label>
+
+                <div className="md:col-span-2 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={closeReservation}
+                    className="rounded-full border border-stone-200 bg-white px-6 py-3 text-sm font-semibold text-stone-700 hover:bg-stone-100 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-full bg-amber-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:bg-amber-800 transition"
+                  >
+                    Confirm Reservation
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
 
         {/* Footer Note */}

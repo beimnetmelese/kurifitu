@@ -1,3 +1,8 @@
+import {
+  fetchUserProfile,
+  getUserProfileFromStorage,
+} from "./userService";
+
 export type DietaryTag = "vegetarian" | "glutenFree" | "vegan" | "halal";
 export type Ambiance = "cozy" | "energetic" | "romantic" | "quiet";
 export type SentimentLabel = "positive" | "neutral" | "negative";
@@ -31,7 +36,11 @@ export type RecommendationPreferences = {
   vegetarian: boolean;
   glutenFree: boolean;
   adventurous: boolean;
-  priceRange: "any" | "value" | "premium";
+  priceRange: {
+    min: number;
+    max: number;
+  };
+  serviceType: "all" | "food" | "spa" | "wellness";
 };
 
 export type Recommendation = {
@@ -44,6 +53,7 @@ export type Recommendation = {
   glutenFree: boolean;
   tags: string[];
   matchScore: number;
+  serviceType: "food" | "spa" | "wellness";
 };
 
 export type RoomState = {
@@ -134,63 +144,91 @@ const assistantSuggestions: AssistantSuggestion[] = [
 const menu: Omit<Recommendation, "matchScore">[] = [
   {
     id: "dish_1",
-    name: "Jollof Rice",
-    description: "Fragrant rice with tomatoes, peppers, and African spices.",
-    price: 15,
-    spicy: true,
-    vegetarian: true,
+    name: "Sushi Omakase",
+    description: "Premier selection of sashimi and nigiri, hand-crafted for a refined dining experience.",
+    price: 28,
+    spicy: false,
+    vegetarian: false,
     glutenFree: true,
-    tags: ["signature", "crowd-favorite"],
+    tags: ["Japanese", "premium", "chef-special"],
+    serviceType: "food",
   },
   {
     id: "dish_2",
-    name: "Suya Skewers",
-    description: "Char-grilled beef with spicy peanut rub.",
-    price: 14,
+    name: "Tacos Al Pastor",
+    description: "Soft tortillas filled with marinated pork, pineapple, and house-made salsa.",
+    price: 16,
     spicy: true,
     vegetarian: false,
-    glutenFree: true,
-    tags: ["street-food", "bold"],
+    glutenFree: false,
+    tags: ["Mexican", "street-food", "zesty"],
+    serviceType: "food",
   },
   {
     id: "dish_3",
-    name: "Egusi Soup",
-    description: "Melon seed stew with leafy greens and slow-cooked beef.",
-    price: 19,
-    spicy: false,
-    vegetarian: false,
-    glutenFree: true,
-    tags: ["comfort", "rich"],
-  },
-  {
-    id: "dish_4",
-    name: "Plantain Fritters",
-    description: "Sweet plantain bites with aromatic spices.",
-    price: 8,
-    spicy: false,
-    vegetarian: true,
-    glutenFree: true,
-    tags: ["snack", "family"],
-  },
-  {
-    id: "dish_5",
-    name: "Tibs Platter",
-    description: "Sautéed beef with berbere and caramelized onions.",
-    price: 22,
-    spicy: true,
-    vegetarian: false,
-    glutenFree: true,
-    tags: ["premium", "spicy"],
-  },
-  {
-    id: "dish_6",
-    name: "Injera Garden Plate",
-    description: "Injera with lentils, greens, and turmeric vegetables.",
-    price: 17,
+    name: "Margherita Pizza",
+    description: "Thin-crust Italian classic topped with buffalo mozzarella, basil, and San Marzano tomato.",
+    price: 18,
     spicy: false,
     vegetarian: true,
     glutenFree: false,
-    tags: ["vegetarian", "balanced"],
+    tags: ["Italian", "classic", "comfort"],
+    serviceType: "food",
+  },
+  {
+    id: "dish_4",
+    name: "Pad Thai",
+    description: "Stir-fried rice noodles with prawns, tamarind, peanuts, and fresh lime.",
+    price: 19,
+    spicy: false,
+    vegetarian: false,
+    glutenFree: false,
+    tags: ["Thai", "noodles", "savory"],
+    serviceType: "food",
+  },
+  {
+    id: "dish_5",
+    name: "Moroccan Lamb Tagine",
+    description: "Slow-braised lamb with apricots, fragrant spices, and toasted almonds.",
+    price: 26,
+    spicy: false,
+    vegetarian: false,
+    glutenFree: true,
+    tags: ["Moroccan", "slow-cooked", "aromatic"],
+    serviceType: "food",
+  },
+  {
+    id: "dish_6",
+    name: "Greek Mezze Platter",
+    description: "Shareable plate of hummus, falafel, pita, olives, and grilled halloumi.",
+    price: 21,
+    spicy: false,
+    vegetarian: true,
+    glutenFree: false,
+    tags: ["Mediterranean", "shareable", "fresh"],
+    serviceType: "food",
+  },
+  {
+    id: "spa_1",
+    name: "Traditional Finnish Sauna",
+    description: "Authentic wood-fired sauna experience with cold plunge and relaxation area.",
+    price: 35,
+    spicy: false,
+    vegetarian: true,
+    glutenFree: true,
+    tags: ["spa", "wellness", "relaxation"],
+    serviceType: "spa",
+  },
+  {
+    id: "spa_2",
+    name: "Aromatherapy Massage",
+    description: "60-minute full-body massage with essential oils and hot stone therapy.",
+    price: 85,
+    spicy: false,
+    vegetarian: true,
+    glutenFree: true,
+    tags: ["spa", "massage", "aromatherapy"],
+    serviceType: "spa",
   },
 ];
 
@@ -257,15 +295,22 @@ const getRecommendationScore = (
 ) => {
   let score = 50;
 
-  if (prefs.spicy) score += dish.spicy ? 18 : -8;
-  if (prefs.vegetarian) score += dish.vegetarian ? 18 : -14;
-  if (prefs.glutenFree) score += dish.glutenFree ? 18 : -12;
-  if (prefs.adventurous)
-    score +=
-      dish.tags.includes("bold") || dish.tags.includes("premium") ? 8 : -4;
+  // Since filtering is done upfront, these preferences are now bonuses
+  if (prefs.spicy && dish.spicy) score += 10;
+  if (prefs.vegetarian && dish.vegetarian) score += 10;
+  if (prefs.glutenFree && dish.glutenFree) score += 10;
 
-  if (prefs.priceRange === "value" && dish.price <= 15) score += 8;
-  if (prefs.priceRange === "premium" && dish.price >= 19) score += 8;
+  // Adventurous preference bonus
+  if (prefs.adventurous && (dish.tags.includes("bold") || dish.tags.includes("premium"))) {
+    score += 8;
+  }
+
+  // Price preference bonuses (within the filtered range)
+  const priceRange = prefs.priceRange.max - prefs.priceRange.min;
+  const pricePosition = (dish.price - prefs.priceRange.min) / priceRange;
+
+  if (pricePosition <= 0.3) score += 5; // Prefer lower end of range
+  else if (pricePosition >= 0.7) score += 3; // Slight preference for higher end
 
   return Math.max(15, Math.min(98, score));
 };
@@ -377,9 +422,32 @@ const buildInsights = () => {
   } as SentimentInsight;
 };
 
-export const fetchGuestProfile = async () => {
-  await delay(550);
-  return guestProfile;
+export const fetchGuestProfile = async (): Promise<GuestProfile> => {
+  // First, check local storage
+  let userProfile = getUserProfileFromStorage();
+  if (!userProfile) {
+    // Fetch from API
+    userProfile = await fetchUserProfile();
+  }
+
+  if (userProfile) {
+    // Map to GuestProfile, hardcode preferences
+    return {
+      id: userProfile.id,
+      name: userProfile.name,
+      loyaltyTier: "Gold", // hardcoded
+      partySize: 3, // hardcoded
+      occasion: "Anniversary Dinner", // hardcoded
+      preferredSpiceLevel: "medium", // hardcoded
+      dietaryTags: ["halal", "glutenFree"], // hardcoded
+      favoriteDishes: ["Jollof Rice", "Tilapia with Berbere", "Injera Platter"], // hardcoded
+      lastVisit: "2026-03-18", // hardcoded
+    };
+  } else {
+    // Fallback to mock
+    await delay(550);
+    return guestProfile;
+  }
 };
 
 export const fetchAssistantSuggestions = async () => {
@@ -438,7 +506,28 @@ export const fetchRecommendations = async (
   prefs: RecommendationPreferences,
 ) => {
   await delay(600);
-  return menu
+
+  // Filter items based on preferences
+  const filteredMenu = menu.filter((dish) => {
+    // Price range filter
+    if (dish.price < prefs.priceRange.min || dish.price > prefs.priceRange.max) {
+      return false;
+    }
+
+    // Service type filter
+    if (prefs.serviceType !== "all" && dish.serviceType !== prefs.serviceType) {
+      return false;
+    }
+
+    // Dietary preferences - if enabled, must match
+    if (prefs.spicy && !dish.spicy) return false;
+    if (prefs.vegetarian && !dish.vegetarian) return false;
+    if (prefs.glutenFree && !dish.glutenFree) return false;
+
+    return true;
+  });
+
+  return filteredMenu
     .map((dish) => ({
       ...dish,
       matchScore: getRecommendationScore(dish, prefs),
