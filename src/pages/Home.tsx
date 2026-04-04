@@ -1,3 +1,18 @@
+import {
+  FiMessageSquare,
+  FiBookOpen,
+  FiSliders,
+  FiStar,
+  FiChevronRight,
+  FiAward,
+  FiUsers,
+  FiCoffee,
+  FiMapPin,
+  FiClock,
+  FiTrendingUp,
+} from "react-icons/fi";
+import { MdOutlineRestaurantMenu, MdEmojiFoodBeverage } from "react-icons/md";
+
 type HomeProps = {
   onNavigate?: (
     page: "assistant" | "menuSuggestions" | "roomControls" | "feedback",
@@ -8,138 +23,251 @@ const Home = ({ onNavigate }: HomeProps = {}) => {
   const features = [
     {
       key: "assistant" as const,
-      icon: (
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-          />
-        </svg>
-      ),
-      title: "AI Assistant",
-      description: "Personalized dining recommendations and instant assistance",
+      icon: <FiMessageSquare className="w-7 h-7" />,
+      title: "AI Concierge",
+      description:
+        "Personalized dining recommendations and intelligent assistance",
+      accent: "from-amber-500 to-amber-600",
+      gradient: "from-amber-50 to-amber-100",
     },
     {
       key: "menuSuggestions" as const,
-      icon: (
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6M17 13l1.5 6M9 21h6M12 15v6"
-          />
-        </svg>
-      ),
-      title: "Menu Suggestions",
-      description: "Curated dishes based on your preferences",
+      icon: <MdOutlineRestaurantMenu className="w-7 h-7" />,
+      title: "Culinary Curator",
+      description:
+        "Artfully curated dishes aligned with your palate preferences",
+      accent: "from-emerald-500 to-emerald-600",
+      gradient: "from-emerald-50 to-emerald-100",
     },
     {
       key: "roomControls" as const,
-      icon: (
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-          />
-        </svg>
-      ),
-      title: "Room Controls",
-      description: "Set the perfect ambiance for your dining experience",
+      icon: <FiSliders className="w-7 h-7" />,
+      title: "Ambient Intelligence",
+      description: "Precision control of lighting, acoustics, and atmosphere",
+      accent: "from-purple-500 to-purple-600",
+      gradient: "from-purple-50 to-purple-100",
     },
     {
       key: "feedback" as const,
-      icon: (
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-          />
-        </svg>
-      ),
-      title: "Guest Feedback",
-      description: "Share your experience to help us improve",
+      icon: <FiStar className="w-7 h-7" />,
+      title: "Guest Voice",
+      description: "Share insights that shape our pursuit of excellence",
+      accent: "from-rose-500 to-rose-600",
+      gradient: "from-rose-50 to-rose-100",
+    },
+  ];
+
+  const stats = [
+    {
+      value: "4.9",
+      label: "Guest Satisfaction",
+      icon: <FiStar className="w-4 h-4" />,
+    },
+    {
+      value: "150+",
+      label: "Daily Guests",
+      icon: <FiUsers className="w-4 h-4" />,
+    },
+    {
+      value: "25+",
+      label: "Signature Dishes",
+      icon: <MdEmojiFoodBeverage className="w-4 h-4" />,
+    },
+    {
+      value: "24/7",
+      label: "Concierge Access",
+      icon: <FiClock className="w-4 h-4" />,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2]">
-      {/* Hero Section */}
-      <div className="relative bg-[#8B2C2D] text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-          <div className="max-w-3xl">
-            <div className="inline-block px-4 py-1 bg-white/10 rounded-full text-sm mb-6">
-              Welcome to
+    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-amber-50/20 to-stone-100">
+      {/* Hero Section - Luxury Redesign */}
+      <div className="relative overflow-hidden">
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-stone-900 via-stone-800 to-amber-900">
+          {/* Decorative Pattern Overlay */}
+          <div
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 1px)`,
+              backgroundSize: "40px 40px",
+            }}
+          ></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+          <div className="max-w-4xl">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm mb-8 border border-white/20">
+              <FiAward className="w-4 h-4 text-amber-400" />
+              <span className="text-white/90 tracking-wide">
+                DESTINATION OF EXCELLENCE
+              </span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-4">
-              Kuriftu African Village
+
+            {/* Main Title */}
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-light text-white mb-6 tracking-tight">
+              Kuriftu
+              <span className="block font-semibold bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent">
+                African Village
+              </span>
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-6">
-              Experience Authentic African Cuisine in a Modern Setting
+
+            {/* Subtitle */}
+            <p className="text-xl md:text-2xl text-white/80 mb-8 font-light max-w-2xl leading-relaxed">
+              Where authentic African culinary heritage meets contemporary
+              luxury
             </p>
-            <div className="w-20 h-1 bg-[#D4A373] rounded-full"></div>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-16 h-0.5 bg-amber-500"></div>
+              <div className="flex items-center gap-2 text-amber-400 text-sm tracking-wide">
+                <FiMapPin className="w-4 h-4" />
+                <span>LUXURY DINING EXPERIENCE</span>
+              </div>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={() => onNavigate?.("assistant")}
+                className="group inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-full hover:from-amber-600 hover:to-amber-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                <span className="font-medium tracking-wide">
+                  BEGIN EXPERIENCE
+                </span>
+                <FiChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button
+                onClick={() => onNavigate?.("menuSuggestions")}
+                className="inline-flex items-center gap-2 px-8 py-3 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-full hover:bg-white/20 transition-all duration-300"
+              >
+                <FiBookOpen className="w-4 h-4" />
+                <span className="font-medium tracking-wide">
+                  EXPLORE CULINARY ART
+                </span>
+              </button>
+            </div>
           </div>
+        </div>
+
+        {/* Decorative Bottom Curve */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg
+            viewBox="0 0 1440 120"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full"
+          >
+            <path
+              d="M0 120L60 110C120 100 240 80 360 75C480 70 600 80 720 85C840 90 960 90 1080 85C1200 80 1320 70 1380 65L1440 60V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+              fill="#FAF7F2"
+            />
+          </svg>
         </div>
       </div>
 
-      {/* Features Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            Your Digital Concierge
+      {/* Features Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 rounded-full mb-4">
+            <FiTrendingUp className="w-4 h-4 text-amber-600" />
+            <span className="text-xs font-semibold text-amber-700 uppercase tracking-wider">
+              Digital Concierge Suite
+            </span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-light text-stone-800 mb-4">
+            Elevated{" "}
+            <span className="font-semibold bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
+              Guest Experience
+            </span>
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Everything you need for a memorable dining experience, right at your
-            fingertips
+          <p className="text-stone-500 text-lg max-w-2xl mx-auto font-light">
+            Intelligent technology thoughtfully integrated with warm hospitality
           </p>
+          <div className="w-20 h-0.5 bg-gradient-to-r from-amber-500 to-amber-700 mx-auto mt-6"></div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
           {features.map((feature, index) => (
             <button
               key={index}
               type="button"
               onClick={() => onNavigate?.(feature.key)}
-              className="group bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100"
+              className="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-stone-100 overflow-hidden text-left"
             >
-              <div className="w-14 h-14 rounded-xl bg-[#8B2C2D]/10 text-[#8B2C2D] flex items-center justify-center mb-5 group-hover:bg-[#8B2C2D] group-hover:text-white transition-all duration-300">
-                {feature.icon}
+              {/* Gradient Hover Effect */}
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+              ></div>
+
+              {/* Icon Container */}
+              <div
+                className={`relative w-16 h-16 rounded-xl bg-gradient-to-br ${feature.accent} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-md`}
+              >
+                <div className="text-white">{feature.icon}</div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {feature.title}
-              </h3>
-              <p className="text-gray-500 leading-relaxed">
-                {feature.description}
-              </p>
+
+              {/* Content */}
+              <div className="relative">
+                <h3 className="text-xl font-semibold text-stone-800 mb-2 group-hover:text-amber-700 transition-colors">
+                  {feature.title}
+                </h3>
+                <p className="text-stone-500 leading-relaxed text-sm">
+                  {feature.description}
+                </p>
+              </div>
+
+              {/* Arrow Indicator */}
+              <div className="relative mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <FiChevronRight className="w-5 h-5 text-amber-600" />
+              </div>
             </button>
           ))}
+        </div>
+
+        {/* Stats Section */}
+        <div className="bg-white/60 backdrop-blur-sm rounded-3xl shadow-xl border border-stone-100 p-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center group">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="text-amber-600 group-hover:scale-110 transition-transform duration-300">
+                    {stat.icon}
+                  </div>
+                  <div className="text-3xl md:text-4xl font-bold text-stone-800">
+                    {stat.value}
+                  </div>
+                </div>
+                <div className="text-sm text-stone-500 font-medium tracking-wide">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Note */}
+      <div className="border-t border-stone-200 py-8 mt-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-2 text-stone-400 text-sm">
+              <FiCoffee className="w-4 h-4" />
+              <span>
+                Kuriftu African Village — Where tradition meets innovation
+              </span>
+            </div>
+            <div className="flex items-center gap-4 text-stone-400 text-xs">
+              <span>© 2024 Kuriftu Hospitality Group</span>
+              <span className="w-1 h-1 bg-stone-300 rounded-full"></span>
+              <span>AI-Powered Guest Experience</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
