@@ -35,7 +35,7 @@ type AppMode = "admin" | "guest";
 
 type AdminPageKey =
   | "overview"
-  | "workforce"
+  | "Staff Scheduling"
   | "maintenance"
   | "inventory"
   | "twin"
@@ -56,54 +56,102 @@ type GuestPageKey =
   | "roomControls"
   | "feedback";
 
-const adminTabs: { key: AdminPageKey; label: string; detail: string }[] = [
-  { key: "overview", label: "Overview", detail: "Real-time command center" },
-  { key: "workforce", label: "Workforce", detail: "Team load and scheduling" },
+type AdminNavItem = { key: AdminPageKey; label: string; detail: string };
+
+type AdminSection = {
+  title: string;
+  description: string;
+  items: AdminNavItem[];
+};
+
+const adminSections: AdminSection[] = [
   {
-    key: "maintenance",
-    label: "Maintenance",
-    detail: "Preventive maintenance insights",
-  },
-  { key: "inventory", label: "Inventory", detail: "Stock, demand, and risk" },
-  { key: "twin", label: "Twin", detail: "Operational digital twin" },
-  {
-    key: "strategy",
-    label: "Strategy",
-    detail: "Scenario planning and what-if",
-  },
-  {
-    key: "revenueOverview",
-    label: "Revenue Overview",
-    detail: "AI revenue command center",
-  },
-  {
-    key: "guests",
-    label: "Guests",
-    detail: "Personalization and spend insights",
-  },
-  { key: "segments", label: "Segments", detail: "Audience strategy and value" },
-  { key: "pricing", label: "Pricing", detail: "Dynamic price recommendations" },
-  {
-    key: "feedbackDashboard",
-    label: "Feedback Dashboard",
-    detail: "Executive sentiment summary",
-  },
-  {
-    key: "feedbackStream",
-    label: "Feedback Stream",
-    detail: "Live customer feedback feed",
+    title: "Feedback Analysis",
+    description: "Sentiment, streams, and answer training",
+    items: [
+      {
+        key: "feedbackDashboard",
+        label: "Feedback Dashboard",
+        detail: "Executive sentiment summary",
+      },
+      {
+        key: "feedbackStream",
+        label: "Feedback Stream",
+        detail: "Live customer feedback feed",
+      },
+      {
+        key: "analyticsLab",
+        label: "Analytics Lab",
+        detail: "Cross-sector sentiment analytics",
+      },
+      {
+        key: "faqTrainer",
+        label: "FAQ Trainer",
+        detail: "Train answer suggestions",
+      },
+    ],
   },
   {
-    key: "analyticsLab",
-    label: "Analytics Lab",
-    detail: "Cross-sector sentiment analytics",
+    title: "Resort Operations",
+    description: "Live command, labor, assets, and scenarios",
+    items: [
+      {
+        key: "overview",
+        label: "Overview",
+        detail: "Real-time command center",
+      },
+      {
+        key: "Staff Scheduling",
+        label: "Staff Scheduling",
+        detail: "Team load and scheduling",
+      },
+      {
+        key: "maintenance",
+        label: "Maintenance",
+        detail: "Preventive maintenance insights",
+      },
+      {
+        key: "inventory",
+        label: "Inventory",
+        detail: "Stock, demand, and risk",
+      },
+      { key: "twin", label: "Twin", detail: "Operational digital twin" },
+      {
+        key: "strategy",
+        label: "Strategy",
+        detail: "Scenario planning and what-if",
+      },
+    ],
   },
   {
-    key: "faqTrainer",
-    label: "FAQ Trainer",
-    detail: "Train answer suggestions",
+    title: "Revenue Generation",
+    description: "Monetization, guest value, and pricing",
+    items: [
+      {
+        key: "revenueOverview",
+        label: "Revenue Overview",
+        detail: "AI revenue command center",
+      },
+      {
+        key: "guests",
+        label: "Guests",
+        detail: "Personalization and spend insights",
+      },
+      {
+        key: "segments",
+        label: "Segments",
+        detail: "Audience strategy and value",
+      },
+      {
+        key: "pricing",
+        label: "Pricing",
+        detail: "Dynamic price recommendations",
+      },
+    ],
   },
 ];
+
+const adminTabs = adminSections.flatMap((section) => section.items);
 
 const guestTabs: { key: GuestPageKey; label: string; detail: string }[] = [
   { key: "home", label: "Home", detail: "Guest experience hub" },
@@ -123,7 +171,7 @@ const guestTabs: { key: GuestPageKey; label: string; detail: string }[] = [
 
 function App({ mode = "admin" }: { mode?: AppMode }) {
   const isGuestMode = mode === "guest";
-  const [adminPage, setAdminPage] = useState<AdminPageKey>("revenueOverview");
+  const [adminPage, setAdminPage] = useState<AdminPageKey>("feedbackDashboard");
   const [guestPage, setGuestPage] = useState<GuestPageKey>("home");
   const [adminScenario, setAdminScenario] =
     useState<ScenarioKey>("Calm Morning");
@@ -390,7 +438,7 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
             story={scenarioStory[adminScenario]}
           />
         );
-      case "workforce":
+      case "Staff Scheduling":
         return (
           <WorkforcePage
             scenario={adminScenario}
@@ -500,25 +548,52 @@ function App({ mode = "admin" }: { mode?: AppMode }) {
 
         <main className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <aside className="rounded-[30px] border border-slate-200/80 bg-white/92 p-4 shadow-[0_18px_48px_rgba(15,23,42,0.07)] backdrop-blur-xl">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">
-              Admin Pages
-            </p>
-            <div className="mt-3 space-y-1.5">
-              {adminTabs.map((tab) => {
-                const isActive = adminPage === tab.key;
+            <div className="space-y-5">
+              {adminSections.map((section, sectionIndex) => {
+                const titleStyles = [
+                  "from-cyan-600 to-blue-600",
+                  "from-emerald-600 to-teal-600",
+                  "from-amber-600 to-orange-600",
+                ];
+                const accent = titleStyles[sectionIndex % titleStyles.length];
+
                 return (
-                  <button
-                    key={tab.key}
-                    onClick={() => setAdminPage(tab.key)}
-                    className={`w-full rounded-xl px-3 py-2 text-left text-sm transition ${isActive ? "bg-slate-950 text-white shadow-[0_10px_22px_rgba(15,23,42,0.2)]" : "bg-slate-50 text-slate-700 hover:bg-white hover:text-slate-950 hover:shadow-sm"}`}
-                  >
-                    <p className="font-semibold">{tab.label}</p>
-                    <p
-                      className={`text-xs ${isActive ? "text-slate-300" : "text-slate-500"}`}
-                    >
-                      {tab.detail}
-                    </p>
-                  </button>
+                  <div key={section.title} className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`h-8 w-1.5 rounded-full bg-gradient-to-b ${accent}`}
+                      />
+                      <div>
+                        <div
+                          className={`inline-flex rounded-full bg-gradient-to-r ${accent} px-3 py-1 text-xs font-black uppercase tracking-[0.3em] text-white shadow-[0_10px_24px_rgba(15,23,42,0.16)]`}
+                        >
+                          {section.title}
+                        </div>
+                        <p className="mt-1 text-sm leading-5 text-slate-500">
+                          {section.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      {section.items.map((tab) => {
+                        const isActive = adminPage === tab.key;
+                        return (
+                          <button
+                            key={tab.key}
+                            onClick={() => setAdminPage(tab.key)}
+                            className={`w-full rounded-xl px-3 py-2 text-left text-[15px] transition ${isActive ? "bg-slate-950 text-white shadow-[0_10px_22px_rgba(15,23,42,0.2)]" : "bg-slate-50 text-slate-700 hover:bg-white hover:text-slate-950 hover:shadow-sm"}`}
+                          >
+                            <p className="font-semibold">{tab.label}</p>
+                            <p
+                              className={`text-[13px] ${isActive ? "text-slate-300" : "text-slate-500"}`}
+                            >
+                              {tab.detail}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
             </div>
