@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
+import DecisionInsightCard from "../components/common/DecisionInsightCard";
 import { guests } from "../data/guests";
+import type { DecisionInsight } from "../types/decisionInsight";
 import { formatCurrency } from "../utils/formatCurrency";
 
 type SegmentPlaybook = {
@@ -148,6 +150,23 @@ export default function Segments() {
           ? "Social ads + booking engine banner"
           : "Email + website personalization",
   };
+
+  const segmentDecisionCards: DecisionInsight[] = segmentData.map((segment) => ({
+    id: segment.name,
+    title: `${segment.name} segment strategy`,
+    prediction: `Avg spend ${formatCurrency(segment.avgSpend)} with ${formatCurrency(segment.totalRevenueContribution)} contribution.`,
+    insight: `${segment.bookingPattern} Pricing sensitivity is ${segment.priceSensitivity.toLowerCase()}.`,
+    recommendedAction: `${segment.bestOffers}. ${segment.upsellStrategy}`,
+    expectedImpact: `+${formatCurrency(segment.expectedRevenueUplift)}/month and +${segment.conversionImprovement}% conversion`,
+    confidence: 72 + Math.min(20, segment.revenueGrowthPotential),
+    reason: segment.marketingSuggestion,
+    tone:
+      segment.name === mostValuable?.name
+        ? "success"
+        : segment.name === underperforming?.name
+          ? "warning"
+          : "info",
+  }));
 
   return (
     <section className="space-y-6">
@@ -428,6 +447,22 @@ export default function Segments() {
           </section>
         </aside>
       </div>
+
+      <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
+        <div className="border-b border-slate-200/80 pb-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500">
+            Segment Decision Feed
+          </p>
+          <h2 className="mt-2 text-xl font-semibold text-slate-950">
+            Segment behavior to campaign outcomes
+          </h2>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {segmentDecisionCards.map((item) => (
+            <DecisionInsightCard key={item.id} item={item} />
+          ))}
+        </div>
+      </section>
     </section>
   );
 }

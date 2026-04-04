@@ -12,8 +12,10 @@ import {
 } from "chart.js";
 import { Bar, Doughnut, Line } from "react-chartjs-2";
 import MetricCard from "../components/cards/MetricCard";
+import DecisionInsightCard from "../components/common/DecisionInsightCard";
 import { analytics } from "../data/analytics";
 import { useDashboardData } from "../hooks/useDashboardData";
+import type { DecisionInsight } from "../types/decisionInsight";
 import { formatCurrency } from "../utils/formatCurrency";
 import { getDemandLevel } from "../utils/getDemandLevel";
 
@@ -169,6 +171,39 @@ export default function RevenueOverview() {
     },
   ];
 
+  const revenueDecisionCards: DecisionInsight[] = [
+    {
+      id: "occupancy-pricing",
+      title: "Occupancy forecast response",
+      prediction: `Predicted occupancy: ${latestOccupancy.toFixed(1)}% (${demandLevel} demand).`,
+      insight: demandLevel === "High"
+        ? "Demand pressure suggests strong price elasticity this period."
+        : demandLevel === "Medium"
+          ? "Demand is stable and supports selective package optimization."
+          : "Demand softness requires occupancy-protection tactics.",
+      recommendedAction: demandLevel === "High"
+        ? "Increase premium room rates by 10-15% and promote high-margin experiences."
+        : demandLevel === "Medium"
+          ? "Hold core pricing, add targeted bundles for Family and Business segments."
+          : "Introduce tactical discounts and stay bundles for low-demand days.",
+      expectedImpact: `+${formatCurrency(Math.round(pricingImpact + totalRevenue * 0.01))} estimated monthly upside`,
+      confidence: demandLevel === "High" ? 88 : demandLevel === "Medium" ? 79 : 72,
+      reason: pricingDirectionReason,
+      tone: demandLevel === "High" ? "success" : demandLevel === "Medium" ? "info" : "warning",
+    },
+    {
+      id: "revenue-uplift",
+      title: "Revenue trend optimization",
+      prediction: `Revenue moved from ${formatCurrency(totalRevenue)} to ${formatCurrency(predictedRevenue)} (${growthPercentage.toFixed(1)}% lift).`,
+      insight: "AI-led pricing and upsell orchestration are the primary drivers of incremental revenue.",
+      recommendedAction: "Scale winning pricing rules to weekend inventory and automate upsell triggers at check-in.",
+      expectedImpact: `+${formatCurrency(Math.round(totalUplift * 0.22))} additional upside from scale-up actions`,
+      confidence: 84,
+      reason: "Historical demand patterns, upsell conversion trend, and segment response rates support the strategy.",
+      tone: "success",
+    },
+  ];
+
   return (
     <section className="space-y-6">
       <div className="relative overflow-hidden rounded-[32px] border border-slate-200/80 bg-slate-950 px-6 py-6 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
@@ -209,6 +244,22 @@ export default function RevenueOverview() {
           value={formatCurrency(totalUplift)}
         />
       </div>
+
+      <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
+        <div className="border-b border-slate-200/80 pb-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500">
+            Decision Intelligence
+          </p>
+          <h2 className="mt-2 text-xl font-semibold text-slate-950">
+            Prediction to pricing and revenue actions
+          </h2>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {revenueDecisionCards.map((item) => (
+            <DecisionInsightCard key={item.id} item={item} />
+          ))}
+        </div>
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <section className="rounded-[30px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl lg:col-span-2">
